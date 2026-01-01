@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Leaf, 
   MapPin, 
   Building2, 
   ArrowRight, 
@@ -62,7 +61,7 @@ const Index = () => {
         <div className="container relative">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in">
-              <Leaf className="h-4 w-4" />
+              <img src="/image.png" alt="UCHI" className="h-4 w-4 rounded" />
               Environmental Intelligence Platform
             </div>
             

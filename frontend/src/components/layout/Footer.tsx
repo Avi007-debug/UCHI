@@ -1,4 +1,4 @@
-import { Leaf, Github, ExternalLink } from 'lucide-react';
+import { Github, ExternalLink } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -6,8 +6,8 @@ const Footer = () => {
       <div className="container">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-              <Leaf className="h-4 w-4 text-primary" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden">
+              <img src="/image.png" alt="UCHI Logo" className="h-full w-full object-cover" />
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">

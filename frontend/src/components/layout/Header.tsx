@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Leaf, Home, MapPin, Upload, BarChart3, GitCompare } from 'lucide-react';
+import { Home, MapPin, Upload, BarChart3, GitCompare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -17,8 +17,8 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-transform group-hover:scale-105">
-            <Leaf className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden transition-transform group-hover:scale-105">
+            <img src="/image.png" alt="UCHI Logo" className="h-full w-full object-cover" />
           </div>
           <div className="hidden sm:block">
             <h1 className="font-display text-lg font-semibold text-foreground">
