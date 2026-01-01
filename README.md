@@ -49,10 +49,10 @@ npm run dev
 ## 📖 Documentation
 
 - **[📝 Setup Guide](./SETUP.md)** - Complete installation and configuration
-- [📚 Project Documentation](./PROJECT_DOCUMENTATION.md) - Project overview
-- [🔧 Development Guide](./DEVELOPMENT_GUIDE.md) - Development workflow
-- [🔌 Backend API](./backend/README.md) - API endpoints
-- [🤖 AI Integration Guide](./AI_INTEGRATION_GUIDE.md) - Add real AI processing
+- [� Development Guide](./DEVELOPMENT_GUIDE.md) - Development workflow and best practices
+- [🏗️ Architecture](./ARCHITECTURE.md) - System architecture and design
+- [🔌 Backend API](./backend/README.md) - API endpoints and backend documentation
+- [🤖 AI Integration Guide](./AI_INTEGRATION_GUIDE.md) - Future AI/ML integration roadmap
 
 ## 🏗️ Technology Stack
 
@@ -61,13 +61,12 @@ npm run dev
 - Vite
 - TailwindCSS
 - shadcn/ui
-- Recharts10+
+- Recharts
+
+### Backend
+- Python 3.9+
 - Flask 3.0
 - **Supabase** (PostgreSQL + Storage)
-- Flask-CORSend
-- Python 3.9+
-- Flask
-- SQLite
 - Flask-CORS
 
 ### Future AI Integration
@@ -78,45 +77,48 @@ npm run dev
 ## 📊 Project Structure
 
 ```
-urbafrontend/              # Frontend application
-│   ├── src/              # React source code
-│   │   ├── components/   # React components
+UCHI/
+├── frontend/              # React frontend application
+│   ├── src/              # Source code
+│   │   ├── components/   # Reusable React components
 │   │   ├── pages/        # Route pages
 │   │   ├── services/     # API services
-│   │   └── types/        # TypeScript types
+│   │   └── types/        # TypeScript type definitions
 │   ├── public/           # Static assets
 │   └── package.json      # Frontend dependencies
-├── backend/              # Backend application
-│   ├── app.py           # Flask application
+│
+├── backend/              # Flask backend application
+│   ├── app.py           # Main Flask application
 │   ├── database.py      # Database operations
-│   ├── preprocessing.py # AI placeholder
-│   ├── vegetation_detection.py
-│   ├── chi_calculation.py
+│   ├── supabase_client.py # Supabase integration
+│   ├── chi_generator.py # CHI calculation logic
+│   ├── preprocessing.py # Image preprocessing (AI ready)
+│   ├── vegetation_detection.py # Vegetation detection (AI ready)
+│   ├── chi_calculation.py # Advanced CHI calculation (AI ready)
 │   └── requirements.txt # Backend dependencies
-└── Documentation files   # Project documentation
-└── public/               # Static assets
+│
+└── Documentation/         # Project documentation
+    ├── README.md         # Project overview
+    ├── SETUP.md          # Setup instructions
+    ├── ARCHITECTURE.md   # System architecture
+    ├── DEVELOPMENT_GUIDE.md # Development guide
+    └── AI_INTEGRATION_GUIDE.md # AI integration roadmap
 ```
 
 ## 🎯 Current Status
 
-- ✅ Complete React frontend
+- ✅ Complete React + TypeScript frontend
 - ✅ Flask REST API backend
-- ✅ SQLite database integration
-- ✅ Dummy CHI generation
-- ✅ Mock and real API support
-- ⏳ AI image processing (planned)
-- ⏳ Actual CHI calculation (planned)
+- ✅ Supabase (PostgreSQL + Storage) integration
+- ✅ Image upload and storage
+- ✅ CHI generation and visualization
+- ✅ Temporal comparison features
+- ✅ Region-wise analysis
+- ⏳ AI-based image processing (planned)
+- ⏳ Real-time vegetation detection (planned)
+- ⏳ Advanced CHI calculation from spectral data (planned)
 
-## 🔄 API Configuration
-
-Switch between mock and real API:
-
-```typescript
-// src/services/apiConfig.ts
-export const USE_MOCK_API = true;  // false for real backend
-```
-
-## 📸 Screenshots
+##  Screenshots
 
 ### Landing Page
 Beautiful hero section with project introduction
@@ -164,26 +166,3 @@ For issues or questions, please create an issue in this repository.
 ---
 
 **Made with 💚 for sustainable urban development**
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
