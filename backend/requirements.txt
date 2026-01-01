@@ -1,0 +1,41 @@
+# Dynamic Urban Canopy Health Index (UCHI) - Backend Requirements
+
+# Flask and CORS
+Flask==3.0.0
+flask-cors==4.0.0
+
+# Database
+# SQLite is built-in to Python, no additional package needed
+
+# Future AI/ML Dependencies (commented out for now)
+# Uncomment when implementing actual AI modules
+
+# Image Processing
+# opencv-python==4.8.1.78
+# Pillow==10.1.0
+
+# Machine Learning / Deep Learning
+# tensorflow==2.15.0
+# torch==2.1.1
+# torchvision==0.16.1
+
+# Scientific Computing
+# numpy==1.26.2
+# scipy==1.11.4
+
+# Computer Vision
+# scikit-image==0.22.0
+
+# Utilities
+# python-dotenv==1.0.0
+
+# Development tools
+python-dotenv==1.0.0
+# Core numerical library required by placeholder AI modules
+numpy==1.26.2
+
+# Optional image processing and ML libraries (uncomment when needed)
+# opencv-python==4.8.1.78
+# Pillow==10.1.0
+# tensorflow==2.15.0
+# torch==2.1.1

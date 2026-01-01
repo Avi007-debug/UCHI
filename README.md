@@ -1,0 +1,199 @@
+# Dynamic Urban Canopy Health Index (UCHI)
+
+![UCHI Banner](https://img.shields.io/badge/UCHI-Vegetation%20Health%20Monitoring-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Active%20Development-blue?style=for-the-badge)
+
+## 🌳 Overview
+
+**Dynamic Urban Canopy Health Index (UCHI)** is a college-level web application for analyzing vegetation health in urban areas using satellite imagery. The system provides both macro-level (city-wide) and micro-level (campus-specific) analysis.
+
+### Study Areas
+- **Bengaluru**: City-wide vegetation assessment (Macro Level)
+- **RV College of Engineering**: Detailed campus analysis (Micro Level)
+
+## ✨ Features
+
+- 🖼️ **Image Upload**: Drag-and-drop satellite imagery upload
+- 📊 **CHI Calculation**: Automated Canopy Health Index computation
+- 📈 **Temporal Analysis**: Compare vegetation health over time
+- 🗺️ **Region-wise Analysis**: Detailed breakdown by sub-regions
+- 📱 **Responsive Design**: Works on desktop and mobile
+- 🔄 **Real-time Updates**: Live data visualization
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- Python 3.9+
+- Git
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/Avi007-debug/urban-canopy-health
+cd urban-canopy-health
+
+# Install frontend dependencies
+cd frontend
+npm install
+
+# Install backend dependencies
+cd ../backend
+pip install -r requirements.txt
+```
+
+### Running the Application
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+python app.py
+```
+Backend will run on `http://localhost:5000`
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+Frontend will run on `http://localhost:5173`
+
+## 📖 Documentation
+
+- [📚 Project Documentation](./PROJECT_DOCUMENTATION.md) - Complete project overview
+- [🔧 Development Guide](./DEVELOPMENT_GUIDE.md) - Development workflow and best practices
+- [🔌 Backend API](./backend/README.md) - API endpoints and backend details
+
+## 🏗️ Technology Stack
+
+### Frontend
+- React 18 + TypeScript
+- Vite
+- TailwindCSS
+- shadcn/ui
+- Recharts
+
+### Backend
+- Python 3.9+
+- Flask
+- SQLite
+- Flask-CORS
+
+### Future AI Integration
+- TensorFlow/PyTorch
+- OpenCV
+- U-Net for segmentation
+
+## 📊 Project Structure
+
+```
+urbafrontend/              # Frontend application
+│   ├── src/              # React source code
+│   │   ├── components/   # React components
+│   │   ├── pages/        # Route pages
+│   │   ├── services/     # API services
+│   │   └── types/        # TypeScript types
+│   ├── public/           # Static assets
+│   └── package.json      # Frontend dependencies
+├── backend/              # Backend application
+│   ├── app.py           # Flask application
+│   ├── database.py      # Database operations
+│   ├── preprocessing.py # AI placeholder
+│   ├── vegetation_detection.py
+│   ├── chi_calculation.py
+│   └── requirements.txt # Backend dependencies
+└── Documentation files   # Project documentation
+└── public/               # Static assets
+```
+
+## 🎯 Current Status
+
+- ✅ Complete React frontend
+- ✅ Flask REST API backend
+- ✅ SQLite database integration
+- ✅ Dummy CHI generation
+- ✅ Mock and real API support
+- ⏳ AI image processing (planned)
+- ⏳ Actual CHI calculation (planned)
+
+## 🔄 API Configuration
+
+Switch between mock and real API:
+
+```typescript
+// src/services/apiConfig.ts
+export const USE_MOCK_API = true;  // false for real backend
+```
+
+## 📸 Screenshots
+
+### Landing Page
+Beautiful hero section with project introduction
+
+### Study Area Selection
+Choose between Bengaluru (Macro) or RVCE (Micro) analysis
+
+### Upload & Analysis
+Drag-and-drop image upload with instant CHI calculation
+
+### Results Dashboard
+Comprehensive visualization of vegetation health data
+
+## 🧪 Testing
+
+```bash
+# Backend API tests
+cd backend
+python test_api.py
+
+# Frontend build test
+npm run build
+npm run preview
+```
+
+## 🤝 Contributing
+
+This is an academic project. For questions or suggestions:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## 📄 License
+
+Academic project for RV College of Engineering
+
+## 👥 Team
+
+UCHI Development Team - RV College of Engineering
+
+## 📞 Contact
+
+For issues or questions, please create an issue in this repository.
+
+---
+
+**Made with 💚 for sustainable urban development**
+- Edit files directly within the Codespace and commit and push your changes once you're done.
+
+## What technologies are used for this project?
+
+This project is built with:
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+
+## Can I connect a custom domain to my Lovable project?
+
+Yes, you can!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
