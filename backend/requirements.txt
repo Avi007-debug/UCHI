@@ -4,8 +4,8 @@
 Flask==3.0.0
 flask-cors==4.0.0
 
-# Database
-# SQLite is built-in to Python, no additional package needed
+# Database - Supabase (using stable version)
+supabase==2.0.0
 
 # Future AI/ML Dependencies (commented out for now)
 # Uncomment when implementing actual AI modules

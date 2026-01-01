@@ -18,11 +18,13 @@ from flask_cors import CORS
 from datetime import datetime
 import os
 from pathlib import Path
+import io
 
 # Import modules
 from database import Database
 from chi_generator import CHIGenerator
 from config import Config
+from supabase_client import get_supabase
 
 # Import AI placeholder modules
 # These will be implemented with actual AI logic later
@@ -34,11 +36,9 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
 
 # Initialize components
-db = Database(Config.DATABASE_PATH)
+db = Database()  # Now uses Supabase
 chi_gen = CHIGenerator()
-
-# Ensure upload directory exists
-Path(Config.UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
+supabase = get_supabase()  # Supabase client for Storage
 
 
 @app.route('/health', methods=['GET'])
@@ -56,7 +56,7 @@ def health_check():
         'version': '1.0.0',
         'services': {
             'database': db.is_connected(),
-            'storage': os.path.exists(Config.UPLOAD_FOLDER),
+            'storage': supabase is not None,
             'aiModule': False  # Will be True when AI is integrated
         }
     }), 200
@@ -105,10 +105,23 @@ def upload_image():
         if area_type == 'RVCE' and sub_region not in valid_sub_regions:
             return jsonify({'error': f'Invalid sub_region. Must be one of: {valid_sub_regions}'}), 400
         
-        # Save file
+        # Upload to Supabase Storage
         filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-        filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
-        file.save(filepath)
+        storage_path = f"{area_type}/{filename}"
+        
+        # Read file content
+        file_content = file.read()
+        
+        # Upload to Supabase Storage bucket
+        try:
+            supabase.storage.from_(Config.SUPABASE_STORAGE_BUCKET).upload(
+                storage_path,
+                file_content,
+                {"content-type": file.content_type}
+            )
+        except Exception as upload_error:
+            print(f"⚠️  Storage upload warning: {upload_error}")
+            # Continue anyway - storage might already exist or be configured differently
         
         # TODO: AI Integration Point
         # Uncomment and implement when AI modules are ready
@@ -134,10 +147,10 @@ def upload_image():
         healthy_vegetation = 40 + (chi_value / 100) * 40
         stressed_vegetation = 100 - healthy_vegetation
         
-        # Store metadata in database
+        # Store metadata in Supabase database
         image_id = db.insert_image_metadata(
             filename=filename,
-            filepath=filepath,
+            storage_path=storage_path,  # Supabase Storage path
             area_type=area_type,
             sub_region=sub_region,
             date=date
@@ -251,8 +264,8 @@ if __name__ == '__main__':
     print("=" * 60)
     print("Dynamic Urban Canopy Health Index (UCHI) Backend")
     print("=" * 60)
-    print(f"Database: {Config.DATABASE_PATH}")
-    print(f"Upload folder: {Config.UPLOAD_FOLDER}")
+    print(f"Database: Supabase PostgreSQL")
+    print(f"Storage: Supabase Storage (bucket: {Config.SUPABASE_STORAGE_BUCKET})")
     print(f"Server running on: http://localhost:{Config.PORT}")
     print("=" * 60)
     

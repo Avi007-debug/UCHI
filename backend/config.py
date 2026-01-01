@@ -3,6 +3,10 @@ Configuration file for UCHI Backend
 """
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class Config:
@@ -13,11 +17,18 @@ class Config:
     PORT = 5000
     DEBUG = True
     
-    # Database settings
-    DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'uchi.db')
+    # Supabase settings (MUST be set in .env file)
+    SUPABASE_URL = os.getenv('SUPABASE_URL', 'YOUR_SUPABASE_URL')
+    
+    # Backend uses SERVICE_KEY (full privileges) - keep this SECRET!
+    SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', os.getenv('SUPABASE_KEY', 'YOUR_SUPABASE_SERVICE_KEY'))
+    
+    # Anon key (for frontend/public access - limited by RLS)
+    SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', 'YOUR_SUPABASE_ANON_KEY')
+    
+    SUPABASE_STORAGE_BUCKET = 'uchi-images'
     
     # File upload settings
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     MAX_FILE_SIZE = 16 * 1024 * 1024  # 16 MB
     

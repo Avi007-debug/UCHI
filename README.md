@@ -22,48 +22,37 @@
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+
-- Python 3.9+
-- Git
+### Complete Setup Instructions
 
-### Installation
+**👉 See [SETUP.md](./SETUP.md) for complete step-by-step installation guide!**
 
-```bash
-# Clone repository
-git clone https://github.com/Avi007-debug/urban-canopy-health
-cd urban-canopy-health
+### Quick Commands
 
-# Install frontend dependencies
-cd frontend
-npm install
-
-# Install backend dependencies
-cd ../backend
-pip install -r requirements.txt
-```
-
-### Running the Application
-
-**Terminal 1 - Backend:**
+**Backend:**
 ```bash
 cd backend
+# Create .env with your Supabase credentials
+pip install Flask==3.0.0 flask-cors==4.0.0 python-dotenv==1.0.0 supabase==2.3.4
 python app.py
 ```
-Backend will run on `http://localhost:5000`
 
-**Terminal 2 - Frontend:**
+**Frontend:**
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
-Frontend will run on `http://localhost:5173`
+
+- Backend: http://localhost:5000
+- Frontend: http://localhost:5173
 
 ## 📖 Documentation
 
-- [📚 Project Documentation](./PROJECT_DOCUMENTATION.md) - Complete project overview
-- [🔧 Development Guide](./DEVELOPMENT_GUIDE.md) - Development workflow and best practices
-- [🔌 Backend API](./backend/README.md) - API endpoints and backend details
+- **[📝 Setup Guide](./SETUP.md)** - Complete installation and configuration
+- [📚 Project Documentation](./PROJECT_DOCUMENTATION.md) - Project overview
+- [🔧 Development Guide](./DEVELOPMENT_GUIDE.md) - Development workflow
+- [🔌 Backend API](./backend/README.md) - API endpoints
+- [🤖 AI Integration Guide](./AI_INTEGRATION_GUIDE.md) - Add real AI processing
 
 ## 🏗️ Technology Stack
 
@@ -72,9 +61,10 @@ Frontend will run on `http://localhost:5173`
 - Vite
 - TailwindCSS
 - shadcn/ui
-- Recharts
-
-### Backend
+- Recharts10+
+- Flask 3.0
+- **Supabase** (PostgreSQL + Storage)
+- Flask-CORSend
 - Python 3.9+
 - Flask
 - SQLite

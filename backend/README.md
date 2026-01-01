@@ -5,22 +5,61 @@ Backend server for the Dynamic Urban Canopy Health Index (UCHI) application.
 ## Features
 
 - Flask REST API
-- SQLite database for metadata and results storage
+- **Supabase PostgreSQL** database for metadata and results
+- **Supabase Storage** for image uploads (cloud-based)
 - Dummy CHI generation (ready for AI integration)
-- Image upload and storage
 - Temporal comparison analysis
 - Region-wise results
 
-## Setup
+## Tech Stack
 
-### 1. Install Dependencies
+- Python 3.10+
+- Flask 3.0
+- Supabase (PostgreSQL + Storage)
+- Flask-CORS
+- python-dotenv
+
+## Quick Setup
+
+### 1. Configure Supabase
+
+See **[SUPABASE_SETUP.md](../SUPABASE_SETUP.md)** for complete instructions.
+
+**Quick version:**
+1. Create Supabase project
+2. Run SQL schema (in Supabase SQL Editor)
+3. Create storage bucket: `uchi-images`
+4. Copy credentials
+
+### 2. Create .env File
 
 ```bash
-cd backend
-pip install -r requirements.txt
+# Copy example
+cp .env.example .env
+
+# Edit with your Supabase credentials
+notepad .env
 ```
 
-### 2. Run the Server
+Add your Supabase credentials:
+```env
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 3. Install Dependencies
+
+**Option 1: Use install script (Windows)**
+```powershell
+.\install.ps1
+```
+
+**Option 2: Manual install**
+```bash
+pip install Flask==3.0.0 flask-cors==4.0.0 python-dotenv==1.0.0 supabase==2.3.4
+```
+
+### 4. Run the Server
 
 ```bash
 python app.py
@@ -28,9 +67,25 @@ python app.py
 
 The server will start on `http://localhost:5000`
 
-### 3. Test the API
+Expected output:
+```
+✅ Supabase client initialized successfully
+============================================================
+Dynamic Urban Canopy Health Index (UCHI) Backend
+============================================================
+Database: Supabase PostgreSQL
+Storage: Supabase Storage (bucket: uchi-images)
+Server running on: http://localhost:5000
+============================================================
+```
+
+### 5. Test the API
 
 ```bash
+# Health check
+curl http://localhost:5000/health
+
+# Or use test script
 python test_api.py
 ```
 
