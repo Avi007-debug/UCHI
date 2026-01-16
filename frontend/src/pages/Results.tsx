@@ -204,7 +204,10 @@ const Results = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <TreeDeciduous className="h-5 w-5 text-muted-foreground" />
-                      <span classNa.toFixed(2)}/100 - {rvceData.category}
+                      <span className="font-medium">RVCE Campus</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {rvceData.chi.toFixed(1)}/100 - {rvceData.category}
                     </span>
                   </div>
                   <div className="h-4 bg-secondary rounded-full overflow-hidden shadow-inner">
@@ -216,10 +219,7 @@ const Results = () => {
                       }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground pl-1
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground pl-1">
                     Campus Baseline: &lt;25 Critical, 25-40 Moderate, &gt;40 Good
                   </p>
                 </div>
@@ -231,7 +231,10 @@ const Results = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <TreePine className="h-5 w-5 text-muted-foreground" />
-                      <span className.toFixed(2)}/100 - {cubbonData.category}
+                      <span className="font-medium">Cubbon Park</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {cubbonData.chi.toFixed(1)}/100 - {cubbonData.category}
                     </span>
                   </div>
                   <div className="h-4 bg-secondary rounded-full overflow-hidden shadow-inner">
@@ -243,10 +246,7 @@ const Results = () => {
                       }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground pl-1
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground pl-1">
                     Park Baseline: &lt;30 Poor, 30-36 Moderate, 36-45 Good, &gt;45 Excellent
                   </p>
                 </div>

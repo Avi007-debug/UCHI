@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Database, Microscope, Map, TrendingUp, Info, CheckCircle2 } from 'lucide-react';
+import { Database, Microscope, Map, TrendingUp, Info, CheckCircle2, Building2, TreeDeciduous, TreePine } from 'lucide-react';
 import { CHI_LEGEND } from '@/lib/chiUtils';
 
 const Methodology = () => {
@@ -196,9 +196,152 @@ const Methodology = () => {
           <TabsContent value="chi-scale" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>CHI Classification Scale</CardTitle>
+                <CardTitle>CHI Calculation Formula</CardTitle>
                 <CardDescription>
-                  Understanding the 5-tier health classification system
+                  The weighted formula used to compute the Canopy Health Index
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="p-6 rounded-lg bg-secondary/50 border-2 border-primary/20">
+                  <div className="text-center mb-4">
+                    <code className="text-lg font-mono font-semibold text-foreground">
+                      CHI = (Coverage × 0.7) + (Greenness × 0.3)
+                    </code>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-foreground min-w-[140px]">Coverage (70%):</span>
+                      <span className="text-muted-foreground">Percentage of image area with green vegetation</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-foreground min-w-[140px]">Greenness (30%):</span>
+                      <span className="text-muted-foreground">Quality metric based on HSV saturation/value</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Why 70/30 weights?</strong> Coverage is prioritized because urban planning focuses on total canopy extent. 
+                      This weighting provides the best correlation with expert visual assessment of urban vegetation health.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Area-Specific Scales */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* City Scale */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    City Scale
+                  </CardTitle>
+                  <CardDescription>e.g., Bengaluru</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#ef4444' }}>
+                      <div className="font-semibold text-white text-sm">Poor (&lt; 20)</div>
+                      <div className="text-xs text-white/90">Severe vegetation deficit</div>
+                    </div>
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#f97316' }}>
+                      <div className="font-semibold text-white text-sm">Moderate (20-35)</div>
+                      <div className="text-xs text-white/90">Limited but acceptable</div>
+                    </div>
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#22c55e' }}>
+                      <div className="font-semibold text-white text-sm">Good (&gt; 35)</div>
+                      <div className="text-xs text-white/90">Healthy for urban context</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Lower thresholds due to high urban density and building coverage.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Campus Scale */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TreeDeciduous className="h-5 w-5" />
+                    Campus Scale
+                  </CardTitle>
+                  <CardDescription>e.g., RVCE</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#ef4444' }}>
+                      <div className="font-semibold text-white text-sm">Critical/Poor (&lt; 25)</div>
+                      <div className="text-xs text-white/90">Needs intervention</div>
+                    </div>
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#f97316' }}>
+                      <div className="font-semibold text-white text-sm">Moderate (25-40)</div>
+                      <div className="text-xs text-white/90">Room for improvement</div>
+                    </div>
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#22c55e' }}>
+                      <div className="font-semibold text-white text-sm">Good (&gt; 40)</div>
+                      <div className="text-xs text-white/90">Well-maintained green space</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Moderate expectations for educational campuses with mixed use.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Park Scale */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TreePine className="h-5 w-5" />
+                    Park Scale
+                  </CardTitle>
+                  <CardDescription>e.g., Cubbon Park</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#f97316' }}>
+                      <div className="font-semibold text-white text-sm">Poor (&lt; 30)</div>
+                      <div className="text-xs text-white/90">Below park standards</div>
+                    </div>
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#eab308' }}>
+                      <div className="font-semibold text-white text-sm">Good (30-45)</div>
+                      <div className="text-xs text-white/90">Adequate park vegetation</div>
+                    </div>
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#22c55e' }}>
+                      <div className="font-semibold text-white text-sm">Excellent (&gt; 45)</div>
+                      <div className="text-xs text-white/90">Exceptional park health</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Higher expectations for dedicated green spaces and conservation areas.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-accent/5 border-accent/20">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-accent mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1">Why Area-Aware Scales?</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Parks should have more vegetation than dense cities. The same CHI score (e.g., 30) means different things: 
+                      "Good" for a city with high building density, but "Poor" for a park dedicated to green space. 
+                      Context-sensitive thresholds reflect urban ecology expectations and enable fair comparisons.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>General CHI Classification</CardTitle>
+                <CardDescription>
+                  Standard 5-tier health classification system (not area-specific)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -291,28 +434,15 @@ const Methodology = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Ground Truth Validation</CardTitle>
+                <CardTitle>Reference Data</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  CHI values are validated against field surveys and manual canopy assessments 
-                  to ensure accuracy. Cross-validation with existing vegetation maps from 
-                  Bengaluru Urban Development Authority (BUDA) confirms spatial accuracy.
+                <p className="text-sm text-muted-foreground">
+                  CHI values are computed using rule-based computer vision (HSV color segmentation) 
+                  and validated through visual inspection of vegetation masks overlaid on original RGB images. 
+                  Expected CHI ranges align with urban ecology literature benchmarks for dense cities (10-30%), 
+                  green campuses (30-50%), and urban parks (60-80%).
                 </p>
-                <div className="grid sm:grid-cols-3 gap-4 text-center">
-                  <div className="p-3 rounded-lg bg-secondary/50">
-                    <div className="text-2xl font-bold text-foreground">87%</div>
-                    <div className="text-xs text-muted-foreground">Overall Accuracy</div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-secondary/50">
-                    <div className="text-2xl font-bold text-foreground">0.82</div>
-                    <div className="text-xs text-muted-foreground">Kappa Coefficient</div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-secondary/50">
-                    <div className="text-2xl font-bold text-foreground">92%</div>
-                    <div className="text-xs text-muted-foreground">User Accuracy</div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
@@ -358,75 +488,76 @@ const Methodology = () => {
             <div className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-amber-600">1. RGB-Based Estimation</CardTitle>
+                  <CardTitle className="text-lg text-amber-600">1. RGB-Based Estimation (Not Physiological Health)</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Limitation:</strong> The system primarily relies on visible spectrum (RGB) 
-                    and near-infrared (NIR) bands for vegetation detection. While NDVI provides good 
-                    proxy for vegetation presence, it cannot capture all aspects of plant health.
+                    <strong>Limitation:</strong> Detection relies solely on visible green color in RGB images. 
+                    Cannot detect plant stress, disease, or drought conditions. No differentiation between 
+                    healthy vs. stressed vegetation.
                   </p>
                   <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                     <p className="text-sm text-amber-900 dark:text-amber-200">
-                      <strong>Impact:</strong> Stressed vegetation with normal chlorophyll content 
-                      may not be detected. Spectral similarity between healthy and certain diseased 
-                      plants can lead to misclassification.
+                      <strong>Implication:</strong> CHI measures visual greenness, not botanical health. 
+                      Early-stage plant stress may go undetected until visible symptoms appear.
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Mitigation:</strong> Cross-validation with ground surveys and temporal 
-                    analysis helps identify anomalies. Future versions may incorporate thermal 
-                    and hyperspectral data for improved accuracy.
-                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-amber-600">2. No Physiological Plant Health</CardTitle>
+                  <CardTitle className="text-lg text-amber-600">2. No Ground-Truth Validation</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Limitation:</strong> UCHI measures canopy characteristics (coverage, density, vigor) 
-                    but cannot directly assess internal plant physiology such as water stress, nutrient deficiency, 
-                    or pest infestation until visible symptoms appear.
+                    <strong>Limitation:</strong> System has not been validated against field measurements. 
+                    No comparison with professional vegetation surveys. Thresholds (HSV: 25-95) are 
+                    empirically determined, not calibrated.
                   </p>
                   <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                     <p className="text-sm text-amber-900 dark:text-amber-200">
-                      <strong>Impact:</strong> Early-stage health issues may go undetected. 
-                      The index is reactive rather than predictive.
+                      <strong>Implication:</strong> CHI scores are relative indicators, not absolute metrics. 
+                      Suitable for comparative analysis and trend monitoring, not precision measurements.
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Mitigation:</strong> Regular temporal monitoring can identify declining 
-                    trends before critical thresholds. Integration with IoT sensors (soil moisture, 
-                    weather data) can provide complementary physiological context.
-                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-amber-600">3. Aggregate Index, Not Ground Truth</CardTitle>
+                  <CardTitle className="text-lg text-amber-600">3. Aggregate Index (Not Pixel-Accurate Diagnosis)</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Limitation:</strong> CHI is a composite metric that aggregates multiple 
-                    factors into a single score. It represents a statistical summary of the area, 
-                    not precise measurements of individual trees or plant specimens.
+                    <strong>Limitation:</strong> Provides area-wide average, not precise spatial mapping. 
+                    Cannot identify individual trees or vegetation types. No species differentiation 
+                    (grass vs. trees vs. shrubs).
                   </p>
                   <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                     <p className="text-sm text-amber-900 dark:text-amber-200">
-                      <strong>Impact:</strong> Localized variations within a region are smoothed out. 
-                      A single unhealthy tree in an otherwise healthy area may not affect the overall score. 
-                      CHI should not replace field verification for critical decisions.
+                      <strong>Implication:</strong> Useful for macro-level monitoring, not detailed ecology studies. 
+                      Localized variations are smoothed out in the aggregate score.
                     </p>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-amber-600">4. Seasonal Dependence</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Mitigation:</strong> Use CHI for screening and prioritization, followed by 
-                    targeted ground surveys in areas of concern. Combine with sub-region analysis for 
-                    finer spatial resolution.
+                    <strong>Limitation:</strong> Dry season images show lower CHI (leaves shed, grass turns brown). 
+                    Monsoon images show higher CHI (lush vegetation). No seasonal normalization applied.
                   </p>
+                  <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                    <p className="text-sm text-amber-900 dark:text-amber-200">
+                      <strong>Implication:</strong> Temporal comparisons must account for seasonality. 
+                      Year-over-year trends are more meaningful than absolute values.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -463,6 +594,66 @@ const Methodology = () => {
                         <strong>Species-Specific Characteristics:</strong> Different tree species have 
                         varying spectral signatures. CHI may not capture species-level health variations.
                       </div>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="border-green-500/30">
+                <CardHeader>
+                  <CardTitle className="text-lg text-green-600 flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5" />
+                    Suitable For
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-muted-foreground">Urban vegetation trend monitoring (monthly/seasonal)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-muted-foreground">Comparative analysis between locations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-muted-foreground">Policy impact assessment (before/after interventions)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-muted-foreground">Educational demonstrations of remote sensing</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-red-500/30">
+                <CardHeader>
+                  <CardTitle className="text-lg text-red-600 flex items-center gap-2">
+                    <Info className="h-5 w-5" />
+                    NOT Suitable For
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-500 mt-1">✗</span>
+                      <span className="text-muted-foreground">Medical diagnosis of plant diseases</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-500 mt-1">✗</span>
+                      <span className="text-muted-foreground">Precision agriculture (needs multispectral imaging)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-500 mt-1">✗</span>
+                      <span className="text-muted-foreground">Legal boundary disputes (needs surveyed accuracy)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-500 mt-1">✗</span>
+                      <span className="text-muted-foreground">Species identification (needs higher resolution + AI)</span>
                     </li>
                   </ul>
                 </CardContent>
