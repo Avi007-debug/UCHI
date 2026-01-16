@@ -5,8 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, TreeDeciduous, Loader2, Info } from 'lucide-react';
 import MapView from '@/components/map/MapView';
 import CHIDisplay from '@/components/chi/CHIDisplay';
-import { getBengaluruCHI, getRVCECHI } from '@/services/api';
+import * as api from '@/services/api';
 import type { AreaType, CHIStatus } from '@/types/uchi';
+import { CHI_LEGEND } from '@/lib/chiUtils';
 
 interface CHIData {
   chi: number;
@@ -20,20 +21,36 @@ const Dashboard = () => {
   const [bengaluruData, setBengaluruData] = useState<CHIData | null>(null);
   const [rvceData, setRvceData] = useState<CHIData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
+        console.log('Fetching CHI data from backend...');
+        console.log('API functions available:', {
+          getBengaluruCHI: typeof api.getBengaluruCHI,
+          getRVCECHI: typeof api.getRVCECHI
+        });
+        
+        if (typeof api.getBengaluruCHI !== 'function' || typeof api.getRVCECHI !== 'function') {
+          throw new Error('API functions not properly loaded. Please refresh the page.');
+        }
+        
         const [blrCHI, rvceCHI] = await Promise.all([
-          getBengaluruCHI(),
-          getRVCECHI(),
+          api.getBengaluruCHI(),
+          api.getRVCECHI(),
         ]);
+        
+        console.log('Bengaluru CHI:', blrCHI);
+        console.log('RVCE CHI:', rvceCHI);
         
         setBengaluruData(blrCHI);
         setRvceData(rvceCHI);
       } catch (error) {
         console.error('Failed to fetch data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to connect to backend. Please ensure the Flask server is running on http://localhost:5000');
       } finally {
         setLoading(false);
       }
@@ -49,6 +66,34 @@ const Dashboard = () => {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Loading dashboard data...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Card className="max-w-2xl mx-auto border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Connection Error</CardTitle>
+            <CardDescription>Unable to fetch data from backend</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <div className="bg-muted p-4 rounded-lg space-y-2">
+              <p className="font-semibold text-sm">Quick Fix:</p>
+              <ol className="list-decimal list-inside text-sm space-y-1 text-muted-foreground">
+                <li>Open a terminal in <code className="bg-background px-1">C:\Coding\UCHI\backend</code></li>
+                <li>Run: <code className="bg-background px-2">python app.py</code></li>
+                <li>Verify backend starts on <code className="bg-background px-1">http://localhost:5000</code></li>
+                <li>Refresh this page</li>
+              </ol>
+            </div>
+            <Button onClick={() => window.location.reload()} className="w-full">
+              Retry Connection
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -224,35 +269,19 @@ const Dashboard = () => {
             <CardDescription>Understanding vegetation health indicators</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-green-500 border-2 border-gray-800"></div>
-                <div>
-                  <div className="font-medium text-sm">Excellent</div>
-                  <div className="text-xs text-muted-foreground">CHI ≥ 75</div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {CHI_LEGEND.map((item) => (
+                <div key={item.status} className="flex items-center gap-3">
+                  <div 
+                    className="w-8 h-8 rounded border-2 border-gray-800"
+                    style={{ backgroundColor: item.color }}
+                  ></div>
+                  <div>
+                    <div className="font-medium text-sm">{item.status}</div>
+                    <div className="text-xs text-muted-foreground">{item.range}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-yellow-500 border-2 border-gray-800"></div>
-                <div>
-                  <div className="font-medium text-sm">Good</div>
-                  <div className="text-xs text-muted-foreground">50 ≤ CHI &lt; 75</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-orange-500 border-2 border-gray-800"></div>
-                <div>
-                  <div className="font-medium text-sm">Moderate</div>
-                  <div className="text-xs text-muted-foreground">25 ≤ CHI &lt; 50</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-red-500 border-2 border-gray-800"></div>
-                <div>
-                  <div className="font-medium text-sm">Poor</div>
-                  <div className="text-xs text-muted-foreground">CHI &lt; 25</div>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>

@@ -26,9 +26,9 @@ export const API_ENDPOINTS = {
   getRVCEResults: '/get-rvce-results',
   compare: (region: string) => `/compare/${region}`,
   // New read-only endpoints
-  getBangaluruCHI: '/chi/bangalore',
+  getBengaluruCHI: '/chi/bangalore',
   getRVCECHI: '/chi/rvce',
-  getBangaluruGeometry: '/geometry/bangalore',
+  getBengaluruGeometry: '/geometry/bangalore',
   getRVCEGeometry: '/geometry/rvce',
 };
 

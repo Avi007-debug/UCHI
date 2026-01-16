@@ -3,6 +3,12 @@
 ![UCHI Banner](https://img.shields.io/badge/UCHI-Vegetation%20Health%20Monitoring-green?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active%20Development-blue?style=for-the-badge)
 
+> **🎯 NEW: Complete setup guides available!**
+> - [COMPLETE_SETUP_GUIDE.md](./COMPLETE_SETUP_GUIDE.md) - Full installation, viva prep, and troubleshooting
+> - [DATASET_COMPILATION_GUIDE.md](./DATASET_COMPILATION_GUIDE.md) - Satellite data processing
+> - [SUPABASE_INTEGRATION_GUIDE.md](./SUPABASE_INTEGRATION_GUIDE.md) - Database setup
+> - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common errors & fixes
+
 ## 🌳 Overview
 
 **Dynamic Urban Canopy Health Index (UCHI)** is a college-level web application for analyzing vegetation health in urban areas using satellite imagery. The system provides both macro-level (city-wide) and micro-level (campus-specific) analysis.

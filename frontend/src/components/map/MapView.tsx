@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import type { AreaType } from '@/types/uchi';
 import { getCHIColor } from '@/lib/chiUtils';
 
@@ -17,26 +18,56 @@ const MapView = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [bangaloreGeo, setBangaloreGeo] = useState<any>(null);
   const [rvceGeo, setRvceGeo] = useState<any>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   // Load GeoJSON files
   useEffect(() => {
+    console.log('Loading GeoJSON files...');
+    
     fetch("/geojson/bangalore.geojson")
-      .then(res => res.json())
-      .then(setBangaloreGeo)
-      .catch(err => console.error("Failed to load Bangalore GeoJSON:", err));
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load bangalore.geojson: ${res.statusText}`);
+        return res.json();
+      })
+      .then(data => {
+        console.log('Bangalore GeoJSON loaded:', data);
+        // Extract the first feature if it's a FeatureCollection
+        setBangaloreGeo(data.type === 'FeatureCollection' ? data.features[0] : data);
+      })
+      .catch(err => {
+        console.error("Failed to load Bangalore GeoJSON:", err);
+        setGeoError(err.message);
+      });
 
     fetch("/geojson/rvce.geojson")
-      .then(res => res.json())
-      .then(setRvceGeo)
-      .catch(err => console.error("Failed to load RVCE GeoJSON:", err));
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load rvce.geojson: ${res.statusText}`);
+        return res.json();
+      })
+      .then(data => {
+        console.log('RVCE GeoJSON loaded:', data);
+        // Extract the first feature if it's a FeatureCollection
+        setRvceGeo(data.type === 'FeatureCollection' ? data.features[0] : data);
+      })
+      .catch(err => {
+        console.error("Failed to load RVCE GeoJSON:", err);
+        setGeoError(err.message);
+      });
   }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !bangaloreGeo || !rvceGeo) return;
+    if (!canvas) return;
+    
+    if (!bangaloreGeo || !rvceGeo) {
+      console.log('Waiting for GeoJSON data...');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    console.log('Rendering map for area:', areaType);
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -50,38 +81,96 @@ const MapView = ({
     const width = rect.width;
     const height = rect.height;
 
-    if (areaType === 'Bengaluru') {
-      // Draw Bengaluru city boundary
-      const bengaluruColor = getCHIColor(bengaluruCHI);
-      const rvceColor = getCHIColor(rvceCHI);
+    // Helper function to convert lat/lng to canvas coordinates
+    const latLngToCanvas = (coords: number[][], bounds: any) => {
+      const { minLat, maxLat, minLng, maxLng } = bounds;
+      const latRange = maxLat - minLat;
+      const lngRange = maxLng - minLng;
+      
+      return coords.map(([lng, lat]) => {
+        const x = ((lng - minLng) / lngRange) * (width - 100) + 50;
+        const y = height - 50 - ((lat - minLat) / latRange) * (height - 100);
+        return [x, y];
+      });
+    };
 
-      // Bengaluru rectangle (full map)
+    // Calculate bounds from GeoJSON
+    const getBounds = (coordinates: number[][][]) => {
+      const allCoords = coordinates[0];
+      const lngs = allCoords.map(c => c[0]);
+      const lats = allCoords.map(c => c[1]);
+      return {
+        minLng: Math.min(...lngs),
+        maxLng: Math.max(...lngs),
+        minLat: Math.min(...lats),
+        maxLat: Math.max(...lats),
+      };
+    };
+
+    if (areaType === 'Bengaluru') {
+      // Get Bengaluru coordinates and bounds
+      const blrCoords = bangaloreGeo.geometry.coordinates;
+      const blrBounds = getBounds(blrCoords);
+      
+      // Draw Bengaluru polygon
+      const bengaluruColor = getCHIColor(bengaluruCHI);
+      const canvasCoords = latLngToCanvas(blrCoords[0], blrBounds);
+      
       ctx.fillStyle = bengaluruColor;
-      ctx.fillRect(50, 50, width - 100, height - 100);
+      ctx.beginPath();
+      ctx.moveTo(canvasCoords[0][0], canvasCoords[0][1]);
+      canvasCoords.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+      ctx.closePath();
+      ctx.fill();
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 2;
-      ctx.strokeRect(50, 50, width - 100, height - 100);
+      ctx.stroke();
 
-      // RVCE rectangle (highlighted sub-region in top-right)
-      const rvceX = width - 200;
-      const rvceY = 80;
-      const rvceWidth = 100;
-      const rvceHeight = 80;
-
-      ctx.fillStyle = rvceColor;
-      ctx.fillRect(rvceX, rvceY, rvceWidth, rvceHeight);
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(rvceX, rvceY, rvceWidth, rvceHeight);
+      // Draw RVCE as highlighted sub-region (force green color)
+      const rvceCoords = rvceGeo.geometry.coordinates;
+      
+      // Map RVCE coords to Bengaluru bounds
+      const rvceCanvasCoords = latLngToCanvas(rvceCoords[0], blrBounds);
+      
+      // Calculate center and scale up RVCE for better visibility
+      const rvceCenterX = rvceCanvasCoords.reduce((sum, c) => sum + c[0], 0) / rvceCanvasCoords.length;
+      const rvceCenterY = rvceCanvasCoords.reduce((sum, c) => sum + c[1], 0) / rvceCanvasCoords.length;
+      
+      // Scale factor to make RVCE more visible (4x larger)
+      const scaleFactor = 4;
+      const scaledRvceCoords = rvceCanvasCoords.map(([x, y]) => [
+        rvceCenterX + (x - rvceCenterX) * scaleFactor,
+        rvceCenterY + (y - rvceCenterY) * scaleFactor
+      ]);
+      
+      // Fill RVCE with green color
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.moveTo(scaledRvceCoords[0][0], scaledRvceCoords[0][1]);
+      scaledRvceCoords.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+      ctx.closePath();
+      ctx.fill();
+      
+      // Add a bright border for emphasis
+      ctx.strokeStyle = '#16a34a';
+      ctx.lineWidth = 4;
+      ctx.stroke();
 
       // Labels
       ctx.fillStyle = '#000';
       ctx.font = 'bold 16px Inter, system-ui, sans-serif';
       ctx.fillText('Bengaluru', 70, 80);
       
-      ctx.fillStyle = '#000';
-      ctx.font = 'bold 12px Inter, system-ui, sans-serif';
-      ctx.fillText('RVCE', rvceX + 25, rvceY + 45);
+      // RVCE label with background
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(rvceCenterX - 30, rvceCenterY - 22, 60, 24);
+      ctx.strokeStyle = '#16a34a';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(rvceCenterX - 30, rvceCenterY - 22, 60, 24);
+      
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+      ctx.fillText('RVCE', rvceCenterX - 20, rvceCenterY - 5);
 
       // Legend
       ctx.fillStyle = '#000';
@@ -90,44 +179,33 @@ const MapView = ({
       ctx.fillText(`RVCE CHI: ${rvceCHI.toFixed(1)}`, 70, height - 50);
 
     } else {
-      // Draw RVCE campus only (zoomed in)
-      const rvceColor = getCHIColor(rvceCHI);
+      // RVCE campus view - zoomed in
+      const rvceCoords = rvceGeo.geometry.coordinates;
+      const rvceBounds = getBounds(rvceCoords);
+      
+      const canvasCoords = latLngToCanvas(rvceCoords[0], rvceBounds);
 
-      ctx.fillStyle = rvceColor;
-      ctx.fillRect(50, 50, width - 100, height - 100);
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(50, 50, width - 100, height - 100);
+      // Force green color for RVCE
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.moveTo(canvasCoords[0][0], canvasCoords[0][1]);
+      canvasCoords.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#16a34a';
+      ctx.lineWidth = 4;
+      ctx.stroke();
 
       // Label
-      ctx.fillStyle = '#000';
-      ctx.font = 'bold 20px Inter, system-ui, sans-serif';
-      ctx.fillText('RVCE Campus', 70, 80);
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+      ctx.fillText('RVCE Campus', 70, 70);
 
-      // Sub-regions (simplified visualization)
-      const subRegions = [
-        { name: 'Sports Ground', x: 70, y: 120, w: 150, h: 100 },
-        { name: 'Campus Buildings', x: 240, y: 120, w: 200, h: 150 },
-        { name: 'Parking', x: 70, y: 240, w: 100, h: 80 },
-        { name: 'Hostel', x: 190, y: 290, w: 120, h: 90 },
-      ];
-
-      subRegions.forEach(region => {
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 5]);
-        ctx.strokeRect(region.x, region.y, region.w, region.h);
-        ctx.setLineDash([]);
-        
-        ctx.fillStyle = '#333';
-        ctx.font = '10px Inter, system-ui, sans-serif';
-        ctx.fillText(region.name, region.x + 5, region.y + 15);
-      });
-
-      // Legend
+      // Add descriptive text
       ctx.fillStyle = '#000';
       ctx.font = '14px Inter, system-ui, sans-serif';
-      ctx.fillText(`RVCE Campus CHI: ${rvceCHI.toFixed(1)}`, 70, height - 50);
+      ctx.fillText(`Campus Health Index: ${rvceCHI.toFixed(1)}`, 70, 100);
+      ctx.fillText('Entire campus vegetation coverage shown', 70, 120);
     }
 
     // Color legend
@@ -157,11 +235,27 @@ const MapView = ({
 
   return (
     <Card className="p-4">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-[500px] rounded-lg border"
-        style={{ width: '100%', height: '500px' }}
-      />
+      {geoError ? (
+        <div className="w-full h-[500px] flex items-center justify-center border rounded-lg bg-muted">
+          <div className="text-center space-y-2">
+            <p className="text-sm font-medium text-destructive">Failed to load map data</p>
+            <p className="text-xs text-muted-foreground">{geoError}</p>
+          </div>
+        </div>
+      ) : !bangaloreGeo || !rvceGeo ? (
+        <div className="w-full h-[500px] flex items-center justify-center border rounded-lg bg-muted">
+          <div className="text-center space-y-2">
+            <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+            <p className="text-sm text-muted-foreground">Loading map...</p>
+          </div>
+        </div>
+      ) : (
+        <canvas
+          ref={canvasRef}
+          className="w-full h-[500px] rounded-lg border"
+          style={{ width: '100%', height: '500px' }}
+        />
+      )}
     </Card>
   );
 };

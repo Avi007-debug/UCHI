@@ -129,8 +129,8 @@ export const getCHIInterpretation = (status: CHIStatus): string => {
  * Get Bengaluru CHI (Precomputed)
  * GET /chi/bangalore
  */
-export const getBangaluruCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
-  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getBangaluruCHI}`);
+export const getBengaluruCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getBengaluruCHI}`);
   if (!response.ok) throw new Error('Failed to fetch Bengaluru CHI');
   return response.json();
 };
@@ -149,8 +149,8 @@ export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; 
  * Get Bengaluru Geometry
  * GET /geometry/bangalore
  */
-export const getBangaluruGeometry = async (): Promise<any> => {
-  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getBangaluruGeometry}`);
+export const getBengaluruGeometry = async (): Promise<any> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getBengaluruGeometry}`);
   if (!response.ok) throw new Error('Failed to fetch Bengaluru geometry');
   return response.json();
 };
