@@ -11,7 +11,31 @@ Track, analyze, and visualize canopy health across cities and campuses to suppor
 
 ---
 
-## 🌳 Features
+## � Problem Statement
+
+Existing urban vegetation indices (e.g., NDVI, EVI) rely on multispectral data (near-infrared bands) and global thresholds, limiting their interpretability and applicability in heterogeneous urban environments. There is a lack of **lightweight, reproducible frameworks** that provide **context-aware vegetation health assessment** using widely available RGB imagery.
+
+### Key Contributions
+
+1. **A deterministic, RGB-based Canopy Health Index (CHI)**  
+   - No training required, fully reproducible results
+   - Weighted formula combining coverage (70%) and greenness quality (30%)
+
+2. **Area-aware interpretation** (city, campus, park)  
+   - Context-sensitive thresholds: same CHI score interpreted differently based on area type
+   - Reflects urban ecology expectations (parks should be greener than dense cities)
+
+3. **Fully reproducible, training-free CV pipeline**  
+   - Classical computer vision (HSV color segmentation)
+   - Deterministic operations guarantee identical results for identical inputs
+
+4. **End-to-end system from imagery to geospatial visualization**  
+   - Automated batch processing, database storage, interactive maps, and data export
+   - Open-source implementation with comprehensive documentation
+
+---
+
+## �🌳 Features
 
 ### **Computer Vision Pipeline**
 - **HSV-based Vegetation Detection**: Rule-based green vegetation identification from RGB images
@@ -104,6 +128,43 @@ npm run dev
 ```
 
 Visit: **http://localhost:5173**
+
+---
+
+## 📊 Why Classical Computer Vision Instead of Deep Learning?
+
+| Aspect | NDVI-based | CNN-based | UCHI (This Work) |
+|--------|------------|-----------|------------------|
+| **Requires NIR** | ✅ Yes | ⚠️ Optional | ❌ No (RGB only) |
+| **Requires labels** | ❌ No | ✅ Yes (thousands) | ❌ No (training-free) |
+| **Interpretability** | 🔴 Low (opaque formula) | 🔴 Low (black box) | 🟢 **High** (explicit rules) |
+| **Area-aware** | ❌ No | ⚠️ Rare | ✅ **Yes** (city/campus/park) |
+| **Deployment cost** | 🟡 Medium (NIR sensors) | 🔴 High (GPU, cloud) | 🟢 **Low** (CPU, deterministic) |
+| **Reproducibility** | 🟢 High | 🟡 Medium (training variance) | 🟢 **100%** (fixed pipeline) |
+| **Dataset requirements** | Multispectral imagery | Large labeled Indian datasets | RGB satellite images |
+| **Computational needs** | Moderate | High (training + inference) | **Low** (simple operations) |
+
+### Design Rationale
+
+**Why we chose classical CV over CNNs:**
+
+1. **No large labeled Indian datasets available**  
+   - Existing datasets (LOVEDA, DeepGlobe) trained on Western/Chinese cities
+   - Domain shift issues when applied to Indian urban vegetation
+
+2. **Emphasis on interpretability over pixel-level accuracy**  
+   - Urban planners need understandable metrics, not black-box predictions
+   - HSV thresholds can be adjusted and explained to stakeholders
+
+3. **Reduced computational and deployment cost**  
+   - Runs on standard laptops without GPU
+   - No cloud infrastructure or model hosting required
+
+4. **Deterministic and reproducible**  
+   - Same input always produces same output (critical for research)
+   - No training randomness or hyperparameter sensitivity
+
+**Trade-off**: We accept lower pixel-level precision in exchange for interpretability, zero training requirements, and deployment simplicity.
 
 ---
 
