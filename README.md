@@ -16,12 +16,15 @@ Track, analyze, and visualize canopy health across cities and campuses to suppor
 ### **Computer Vision Pipeline**
 - **HSV-based Vegetation Detection**: Rule-based green vegetation identification from RGB images
 - **Canopy Health Index (CHI)**: Quantitative measure (0-100) combining coverage and quality
+- **Area-Aware Color Grading**: Context-sensitive thresholds for city, campus, and park areas
+- **Smooth Gradient Coloring**: Professional visualization with interpolated color transitions
 - **Batch Processing**: Automated analysis of multiple satellite/aerial images
 - **Real-time Visualization**: Green overlay masks showing detected vegetation
 
 ### **Geospatial Analysis**
 - **Interactive Maps**: Leaflet-based visualization with polygon boundaries
-- **Multi-location Support**: Compare CHI across different urban areas (Bengaluru & RVCE)
+- **Multi-location Support**: Compare CHI across urban areas (Bengaluru City, RVCE Campus, Cubbon Park)
+- **Area-Type Differentiation**: Cities, campuses, and parks evaluated with appropriate baselines
 - **Temporal Tracking**: Monitor vegetation changes over time
 - **GeoJSON Integration**: Standard format for boundary data
 
@@ -64,6 +67,7 @@ SUPABASE_STORAGE_BUCKET=uchi-images
 Run database schema in Supabase SQL Editor:
 ```bash
 # Copy contents of backend/supabase_schema.sql and run in Supabase dashboard
+# If upgrading from old data, also run the UPDATE statements in the migration section
 ```
 
 ### **3. Frontend Setup**
@@ -77,6 +81,7 @@ Place satellite/aerial images in:
 ```
 backend/datasets/bangalore/  # Bengaluru city images
 backend/datasets/rvce/       # RVCE campus images
+backend/datasets/cubbon/     # Cubbon Park images
 ```
 
 ### **5. Run CV Pipeline**
@@ -104,6 +109,17 @@ Visit: **http://localhost:5173**
 
 ## 📊 How It Works
 
+### **Methodology Flow**
+
+```
+Satellite Images → Preprocessing → Vegetation Mask → Metrics → CHI → Database → Visualization
+       ↓              ↓                  ↓             ↓        ↓        ↓            ↓
+   RGB files      Resize 512×512    HSV Filter    Coverage  Formula  Supabase   Interactive
+   (JPG/PNG)      Filter <5%        (25-95°H)    Greenness  (0-100)  Storage      Maps
+```
+
+**Detailed Pipeline**: See [RESEARCH_DOCUMENTATION.md](RESEARCH_DOCUMENTATION.md#-methodology-flow-diagram) for complete flow diagram.
+
 ### **CHI Calculation**
 ```python
 CHI = (vegetation_coverage × 0.7) + (greenness_intensity × 0.3)
@@ -113,19 +129,54 @@ CHI = (vegetation_coverage × 0.7) + (greenness_intensity × 0.3)
 - **Vegetation Coverage (70%)**: Percentage of image area with green vegetation
 - **Greenness Intensity (30%)**: Quality metric based on HSV saturation/value
 
-**Status Levels:**
-- 🟢 **Excellent** (80-100): Outstanding urban vegetation
-- 🟢 **Good** (70-79): Healthy vegetation cover
-- 🟡 **Moderate** (50-69): Adequate but improvable
-- 🟠 **Poor** (30-49): Limited vegetation
-- 🔴 **Critical** (0-29): Severe vegetation deficit
+**Why 70/30 weights?**  
+Coverage prioritized because urban planning focuses on total canopy extent. See [sensitivity analysis](RESEARCH_DOCUMENTATION.md#-chi-sensitivity-analysis) for detailed justification.
+
+**Area-Aware Status Levels:**
+
+Different area types have different baseline expectations:
+
+🏙️ **City (e.g., Bengaluru)** - Lower thresholds due to urban density:
+- 🟠 **Poor** (< 20): Severe vegetation deficit
+- 🟡 **Moderate** (20-35): Limited but acceptable
+- 🟢 **Good** (> 35): Healthy for urban context
+
+🏫 **Campus (e.g., RVCE)** - Moderate expectations:
+- 🔴 **Critical/Poor** (< 25): Needs intervention
+- 🟠 **Moderate** (25-40): Room for improvement
+- 🟢 **Good** (> 40): Well-maintained green space
+
+🌳 **Park (e.g., Cubbon Park)** - Higher expectations:
+- 🟠 **Poor** (< 30): Below park standards
+- 🟡 **Good** (30-45): Adequate park vegetation
+- 🟢 **Excellent** (> 45): Exceptional park health
+
+**Why Area-Aware?** Parks should have more vegetation than dense cities. Same CHI score (e.g., 30) means different things: "Good" for a city, "Poor" for a park. See [AREA_AWARE_COLOR_SYSTEM.md](AREA_AWARE_COLOR_SYSTEM.md) for technical details.
 
 ### **Detection Algorithm**
-1. **Preprocessing**: Resize images to 512×512, convert RGB to HSV
+1. **Preprocessing**: Resize images to 512×512, filter <5% coverage, convert RGB to HSV
 2. **Color Segmentation**: Apply HSV thresholds (H: 25-95, S: 30-255, V: 30-255)
 3. **Pixel Counting**: Calculate vegetation vs total pixels
 4. **Greenness Metric**: Average saturation and value in vegetation areas
 5. **CHI Computation**: Weighted formula for final score
+
+**Reproducibility**: 100% deterministic - same dataset yields identical results. No randomness, no ML training variance.
+
+---
+
+## ⚠️ Limitations & Assumptions
+
+**Critical for Research Use:**
+
+1. **RGB-Based Estimation**: Measures visual greenness, NOT plant physiological health (cannot detect stress/disease)
+2. **No Ground-Truth Validation**: Scores are relative indicators, not calibrated against field measurements
+3. **Aggregate Index**: Provides area-wide average, not pixel-precise spatial mapping
+4. **Seasonal Dependence**: Dry season shows lower CHI due to leaf shedding
+
+**Full Details**: See [RESEARCH_DOCUMENTATION.md](RESEARCH_DOCUMENTATION.md#%EF%B8%8F-limitations--assumptions) for complete limitations analysis.
+
+**Suitable For**: Urban trends, comparative analysis, policy assessment  
+**NOT Suitable For**: Plant disease diagnosis, precision agriculture, species identification
 
 ---
 
@@ -177,9 +228,13 @@ upper_green = np.array([95, 255, 255])  # H, S, V upper bounds
 ```
 GET  /health                 # Health check
 GET  /chi/bangalore          # Bengaluru CHI
-GET  /chi/rvce              # RVCE CHI
+GET  /chi/cubbon            # Cubbon Park CHI
 GET  /geometry/bangalore    # GeoJSON boundary
 GET  /geometry/rvce         # GeoJSON boundary
+GET  /geometry/cubbon       # GeoJSON boundary  
+GET  /get-results           # All database results
+GET  /export/csv            # Export data as CSV
+GET  /export/json           # Export complete dataset
 GET  /get-results           # All database results
 ```
 
@@ -224,20 +279,116 @@ Edit `backend/vegetation_detection.py` and re-run pipeline.
 
 ---
 
-## 📝 Research & Methodology
+## � Documentation
 
-UCHI uses **rule-based computer vision** instead of ML models for transparency and explainability:
+**Two comprehensive documentation files:**
 
-- **No ML Dependencies**: Pure OpenCV HSV color segmentation
-- **No NDVI Calculation**: RGB-only, no NIR bands required
-- **No Complex Models**: Lightweight, interpretable algorithm
-- **Scientifically Defensible**: Clear metrics, documented thresholds
+1. **[README.md](README.md)** (this file) - Quick start, setup, API reference, troubleshooting
+2. **[RESEARCH_DOCUMENTATION.md](RESEARCH_DOCUMENTATION.md)** - Research quality documentation
 
-Suitable for:
-- Urban planning assessments
-- Campus sustainability tracking
-- Environmental impact studies
-- Green space policy research
+### Research Documentation Highlights
+
+📖 **RESEARCH_DOCUMENTATION.md** includes:
+- ⚠️ **Limitations & Assumptions** - RGB-based estimation, no ground-truth validation, seasonal dependence
+- 📊 **Methodology Flow Diagram** - Complete ASCII pipeline visualization
+- 🎯 **CHI Sensitivity Analysis** - Quantitative impact: coverage (+48%), greenness (-23%), combined (+149%)
+- 🔬 **Reproducibility Statement** - 100% deterministic pipeline, FAIR principles compliance
+- 📚 **Academic References** - Supporting literature (Smith 1978, Gamon 1995, Weinstein 2018)
+- ✅ **Suitable Applications** - Urban planning, campus sustainability, policy assessment
+- ❌ **Unsuitable Applications** - Plant disease diagnosis, precision agriculture, species ID
+
+### Technical Summary
+
+UCHI uses **rule-based computer vision** for transparency:
+- **No ML Dependencies**: Pure OpenCV HSV color segmentation (H: 25-95°, S: 30-255, V: 30-255)
+- **No NDVI Calculation**: RGB-only, no NIR bands required  
+- **No Complex Models**: Lightweight, interpretable algorithm (512×512 resize, pixel counting)
+- **Scientifically Defensible**: Clear metrics, documented thresholds, reproducible results
+
+**Formula**: `CHI = (vegetation_coverage × 0.7) + (greenness_intensity × 0.3)`
+
+---
+
+## 🎨 Color Scheme & Visual Guide
+
+### **Area-Aware Color Coding**
+
+UCHI uses **context-sensitive color thresholds** that adapt to different area types:
+
+#### 🏙️ City (Bengaluru) - Urban Baseline
+```
+CHI < 20        → 🔴 Red (Critical/Poor)
+CHI 20-35       → 🟠 Orange (Poor/Moderate)
+CHI > 35        → 🟡 Yellow (Moderate/Good)
+```
+**Rationale**: Dense urban areas have limited space for vegetation. Lower thresholds reflect realistic expectations.
+
+#### 🏫 Campus (RVCE) - Managed Green Space Baseline
+```
+CHI < 25        → 🔴 Red (Critical/Poor)
+CHI 25-40       → 🟠 Orange (Poor/Moderate)
+CHI > 40        → 🟡 Yellow (Moderate/Good)
+```
+**Rationale**: Campus areas are managed spaces with moderate vegetation potential.
+
+#### 🌳 Park (Cubbon Park) - Dedicated Vegetation Baseline
+```
+CHI < 30        → 🔴 Red (Poor)
+CHI 30-36       → 🟠 Orange (Moderate)
+CHI 36-45       → 🟢 Light Green (Good)
+CHI > 45        → 🟢 Dark Green (Excellent)
+```
+**Rationale**: Parks are dedicated green spaces expected to have high vegetation. Higher thresholds ensure accurate assessment.
+
+### **Smooth Gradient Coloring**
+
+Colors blend seamlessly between thresholds (no harsh boundaries):
+- **Example**: Cubbon Park at CHI 37.86 shows **light green** (blend of yellow + green)
+- **Benefit**: Professional visualization, easy interpretation
+
+### **Scientific Justification**
+
+Urban ecology research shows land-use type significantly affects baseline vegetation indices:
+- **Same CHI, Different Meaning**: CHI 30 is "Good" for a city (limited space) but "Moderate" for a park (should be greener)
+- **Context-Sensitive Assessment**: Accurate evaluation requires area-type awareness
+- **Research Precedent**: NDVI thresholds vary by land use type in published studies
+
+**Visual Guide**: The Dashboard and Results pages display an interactive color scheme guide showing all thresholds and their meanings.
+
+---
+
+## 🗄️ Database Migration
+
+### **For New Installations**
+Simply run the schema file in Supabase:
+```sql
+-- Copy entire backend/supabase_schema.sql into Supabase SQL Editor and execute
+```
+
+### **For Existing Databases (Upgrading from Old Versions)**
+
+If you have existing data with legacy `area_type` values ('Bengaluru', 'RVCE'), you need to migrate:
+
+1. **Open Supabase Dashboard** → SQL Editor
+2. **Run the main schema**: Paste contents of `backend/supabase_schema.sql`
+3. **Migrate old data**: Uncomment and run the UPDATE statements in the migration section:
+   ```sql
+   UPDATE image_metadata SET area_type = 'city' WHERE area_type = 'Bengaluru';
+   UPDATE image_metadata SET area_type = 'campus' WHERE area_type = 'RVCE';
+   UPDATE image_metadata SET area_type = 'park' WHERE area_type = 'Cubbon Park';
+   
+   UPDATE chi_results SET area_type = 'city' WHERE area_type = 'Bengaluru';
+   UPDATE chi_results SET area_type = 'campus' WHERE area_type = 'RVCE';
+   UPDATE chi_results SET area_type = 'park' WHERE area_type = 'Cubbon Park';
+   ```
+
+**Migration Order**: The schema file handles this automatically - old data is updated before new constraints are enforced.
+
+**Verification**:
+```sql
+SELECT DISTINCT area_type FROM chi_results;
+-- Should return: city, campus, park (no old values)
+```
 
 ---
 

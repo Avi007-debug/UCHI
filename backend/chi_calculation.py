@@ -37,26 +37,65 @@ class CHICalculator:
         return float(chi_score)
     
     @staticmethod
-    def get_chi_status(chi_score):
+    def get_chi_status(chi_score, area_type=None):
         """
-        Determine health status from CHI score
+        Determine health status from CHI score with area-aware thresholds
+        
+        Different area types have different baseline expectations:
+        - City: Lower thresholds (urban density limits vegetation)
+        - Campus: Moderate thresholds (managed green spaces)
+        - Park: Higher thresholds (expected to be green)
         
         Args:
             chi_score: CHI value (0-100)
+            area_type: Area type ('city', 'campus', 'park') for context-aware interpretation
             
         Returns:
             Status string matching database schema
         """
-        if chi_score >= 80:
-            return "Excellent"
-        elif chi_score >= 70:
-            return "Good"
-        elif chi_score >= 50:
-            return "Moderate"
-        elif chi_score >= 30:
-            return "Poor"
+        if area_type == 'city':
+            # City: Lower expectations due to urban density
+            if chi_score >= 40:
+                return "Good"
+            elif chi_score >= 35:
+                return "Moderate"
+            elif chi_score >= 20:
+                return "Poor"
+            else:
+                return "Critical"
+        elif area_type == 'campus':
+            # Campus: Moderate expectations
+            if chi_score >= 50:
+                return "Good"
+            elif chi_score >= 40:
+                return "Moderate"
+            elif chi_score >= 25:
+                return "Poor"
+            else:
+                return "Critical"
+        elif area_type == 'park':
+            # Park: Higher expectations (should have more vegetation)
+            # 🔴 < 30: Poor, 🟠 30-36: Moderate, 🟢 36-45: Good, 🟢 45+: Excellent
+            if chi_score >= 45:
+                return "Excellent"
+            elif chi_score >= 36:
+                return "Good"
+            elif chi_score >= 30:
+                return "Moderate"
+            else:
+                return "Poor"
         else:
-            return "Critical"
+            # Legacy global thresholds (backward compatibility)
+            if chi_score >= 80:
+                return "Excellent"
+            elif chi_score >= 70:
+                return "Good"
+            elif chi_score >= 50:
+                return "Moderate"
+            elif chi_score >= 30:
+                return "Poor"
+            else:
+                return "Critical"
     
     @staticmethod
     def get_interpretation(status):

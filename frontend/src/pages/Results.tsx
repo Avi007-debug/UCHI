@@ -2,30 +2,37 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Building2, TreeDeciduous, RefreshCw, Loader2 } from 'lucide-react';
+import { BarChart3, Building2, TreeDeciduous, RefreshCw, Loader2, TreePine } from 'lucide-react';
 import CHIDisplay from '@/components/chi/CHIDisplay';
-import RegionTable from '@/components/tables/RegionTable';
-import CHIBarChart from '@/components/charts/CHIBarChart';
-import { getBangaloreSummary, getRVCEResults, getResults, getCHIInterpretation } from '@/services/api';
-import type { BangaloreSummary, RVCERegionResult, CHIResult } from '@/types/uchi';
+import { ColorSchemeGuide } from '@/components/chi/ColorSchemeGuide';
+import { getBengaluruCHI, getRVCECHI, getCubbonCHI, getCHIInterpretation } from '@/services/api';
+import { getCHIColor } from '@/lib/chiUtils';
+import type { CHIStatus } from '@/types/uchi';
+
+interface AreaData {
+  chi: number;
+  category: CHIStatus;
+  interpretation: string;
+  areaType: string;
+}
 
 const Results = () => {
-  const [bangaloreSummary, setBangaloreSummary] = useState<BangaloreSummary | null>(null);
-  const [rvceResults, setRvceResults] = useState<RVCERegionResult[]>([]);
-  const [allResults, setAllResults] = useState<CHIResult[]>([]);
+  const [bengaluruData, setBengaluruData] = useState<AreaData | null>(null);
+  const [rvceData, setRvceData] = useState<AreaData | null>(null);
+  const [cubbonData, setCubbonData] = useState<AreaData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [blrData, rvceData, allData] = await Promise.all([
-        getBangaloreSummary(),
-        getRVCEResults(),
-        getResults(),
+      const [blrData, rvceData, cubbonData] = await Promise.all([
+        getBengaluruCHI(),
+        getRVCECHI(),
+        getCubbonCHI(),
       ]);
-      setBangaloreSummary(blrData);
-      setRvceResults(rvceData);
-      setAllResults(allData);
+      setBengaluruData(blrData);
+      setRvceData(rvceData);
+      setCubbonData(cubbonData);
     } catch (error) {
       console.error('Failed to fetch results:', error);
     }
@@ -85,135 +92,173 @@ const Results = () => {
         </div>
 
         {/* Overview Cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-10">
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
           {/* Bengaluru Summary */}
-          {bangaloreSummary && (
+          {bengaluruData && (
             <Card className="gradient-card animate-fade-in">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  Bengaluru Overview
+                  Bengaluru
                 </CardTitle>
-                <CardDescription>City-wide vegetation health summary</CardDescription>
+                <CardDescription>City-wide (25.0 CHI)</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-6">
-                  <CHIDisplay 
-                    value={bangaloreSummary.overallCHI} 
-                    status={bangaloreSummary.status}
-                    size="md"
-                    showTrend
-                    trendDirection={bangaloreSummary.trendDirection}
-                    trendPercentage={bangaloreSummary.trendPercentage}
-                  />
-                  <div className="flex-1 space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      {getCHIInterpretation(bangaloreSummary.status).substring(0, 120)}...
-                    </p>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-muted-foreground">
-                        Analyses: <span className="text-foreground font-medium">{bangaloreSummary.totalAnalyses}</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <CHIDisplay 
+                  value={bengaluruData.chi} 
+                  status={bengaluruData.category}
+                  size="lg"
+                />
+                <p className="text-sm text-muted-foreground mt-4">
+                  {bengaluruData.interpretation.substring(0, 100)}...
+                </p>
               </CardContent>
             </Card>
           )}
 
           {/* RVCE Summary */}
-          <Card className="gradient-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TreeDeciduous className="h-5 w-5 text-primary" />
-                RVCE Overview
-              </CardTitle>
-              <CardDescription>Campus vegetation health summary</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-5 gap-2">
-                {rvceResults.map((result) => (
-                  <div key={result.region} className="text-center">
-                    <CHIDisplay 
-                      value={result.chiValue} 
-                      status={result.status}
-                      size="sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1 truncate">
-                      {result.region}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Detailed Results */}
-        <Tabs defaultValue="rvce" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="rvce" className="flex items-center gap-2">
-              <TreeDeciduous className="h-4 w-4" />
-              RVCE Detailed
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              All Analyses
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="rvce" className="space-y-6 animate-fade-in">
-            <div className="grid lg:grid-cols-2 gap-6">
-              <RegionTable data={rvceResults} />
-              <CHIBarChart data={rvceResults} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="history" className="animate-fade-in">
-            <Card className="gradient-card">
+          {rvceData && (
+            <Card className="gradient-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <CardHeader>
-                <CardTitle>Analysis History</CardTitle>
-                <CardDescription>All vegetation health analyses performed</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <TreeDeciduous className="h-5 w-5 text-primary" />
+                  RVCE Campus
+                </CardTitle>
+                <CardDescription>52-acre campus (22.32 CHI)</CardDescription>
               </CardHeader>
               <CardContent>
-                {allResults.length > 0 ? (
-                  <div className="space-y-4">
-                    {allResults.slice(0, 10).map((result, index) => (
-                      <div 
-                        key={result.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <CHIDisplay 
-                            value={result.chiValue} 
-                            status={result.status} 
-                            size="sm" 
-                            animate={false}
-                          />
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {result.subRegion || result.areaType}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {result.date}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {result.areaType}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">No analyses found</p>
-                  </div>
-                )}
+                <CHIDisplay 
+                  value={rvceData.chi} 
+                  status={rvceData.category}
+                  size="lg"
+                />
+                <p className="text-sm text-muted-foreground mt-4">
+                  {rvceData.interpretation.substring(0, 100)}...
+                </p>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          )}
+
+          {/* Cubbon Park Summary */}
+          {cubbonData && (
+            <Card className="gradient-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TreePine className="h-5 w-5 text-primary" />
+                  Cubbon Park
+                </CardTitle>
+                <CardDescription>300-acre park (37.86 CHI)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CHIDisplay 
+                  value={cubbonData.chi} 
+                  status={cubbonData.category}
+                  size="lg"
+                />
+                <p className="text-sm text-muted-foreground mt-4">
+                  {cubbonData.interpretation.substring(0, 100)}...
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Comparison Chart */}
+        <Card className="gradient-card">
+          <CardHeader>
+            <CardTitle>CHI Comparison</CardTitle>
+            <CardDescription>Area-aware vegetation health comparison with context-sensitive thresholds</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Bengaluru */}
+              {bengaluruData && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <span className="font-medium">Bengaluru (City)</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {bengaluruData.chi.toFixed(1)}/100 - {bengaluruData.category}
+                    </span>
+                  </div>
+                  <div className="h-4 bg-secondary rounded-full overflow-hidden shadow-inner">
+                    <div 
+                      className="h-full transition-all duration-500"
+                      style={{ 
+                        width: `${bengaluruData.chi}%`,
+                        backgroundColor: getCHIColor(bengaluruData.chi, 'city')
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-1">
+                    City Baseline: &lt;20 Critical, 20-35 Moderate, &gt;35 Good
+                  </p>
+                </div>
+              )}
+
+              {/* RVCE */}
+              {rvceData && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <TreeDeciduous className="h-5 w-5 text-muted-foreground" />
+                      <span classNa.toFixed(2)}/100 - {rvceData.category}
+                    </span>
+                  </div>
+                  <div className="h-4 bg-secondary rounded-full overflow-hidden shadow-inner">
+                    <div 
+                      className="h-full transition-all duration-500"
+                      style={{ 
+                        width: `${rvceData.chi}%`,
+                        backgroundColor: getCHIColor(rvceData.chi, 'campus')
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-1
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Campus Baseline: &lt;25 Critical, 25-40 Moderate, &gt;40 Good
+                  </p>
+                </div>
+              )}
+
+              {/* Cubbon Park */}
+              {cubbonData && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <TreePine className="h-5 w-5 text-muted-foreground" />
+                      <span className.toFixed(2)}/100 - {cubbonData.category}
+                    </span>
+                  </div>
+                  <div className="h-4 bg-secondary rounded-full overflow-hidden shadow-inner">
+                    <div 
+                      className="h-full transition-all duration-500"
+                      style={{ 
+                        width: `${cubbonData.chi}%`,
+                        backgroundColor: getCHIColor(cubbonData.chi, 'park')
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-1
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Park Baseline: &lt;30 Poor, 30-36 Moderate, 36-45 Good, &gt;45 Excellent
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Color Scheme Guide */}
+        <div className="mt-8">
+          <ColorSchemeGuide />
+        </div>
       </div>
     </div>
   );

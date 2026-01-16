@@ -37,26 +37,60 @@ class CHIGenerator:
         chi = random.uniform(min_chi, max_chi)
         return round(chi, 2)
     
-    def get_status(self, chi: float) -> str:
+    def get_status(self, chi: float, area_type: str = None) -> str:
         """
-        Determine health status from CHI value
+        Determine health status from CHI value with area-aware thresholds
         
         Args:
             chi: CHI value
+            area_type: Area type ('city', 'campus', 'park') for context-aware interpretation
             
         Returns:
             Status string (Excellent, Good, Moderate, Poor, Critical)
         """
-        if chi >= self.thresholds['Excellent']:
-            return 'Excellent'
-        elif chi >= self.thresholds['Good']:
-            return 'Good'
-        elif chi >= self.thresholds['Moderate']:
-            return 'Moderate'
-        elif chi >= self.thresholds['Poor']:
-            return 'Poor'
+        # Area-aware thresholds for more accurate status
+        if area_type == 'city':
+            # City: Lower expectations due to urban density
+            if chi >= 40:
+                return 'Good'
+            elif chi >= 35:
+                return 'Moderate'
+            elif chi >= 20:
+                return 'Poor'
+            else:
+                return 'Critical'
+        elif area_type == 'campus':
+            # Campus: Moderate expectations
+            if chi >= 50:
+                return 'Good'
+            elif chi >= 40:
+                return 'Moderate'
+            elif chi >= 25:
+                return 'Poor'
+            else:
+                return 'Critical'
+        elif area_type == 'park':
+            # Park: Higher expectations (should have more vegetation)
+            if chi >= 60:
+                return 'Excellent'
+            elif chi >= 45:
+                return 'Good'
+            elif chi >= 30:
+                return 'Moderate'
+            else:
+                return 'Poor'
         else:
-            return 'Critical'
+            # Legacy global thresholds (backward compatibility)
+            if chi >= self.thresholds['Excellent']:
+                return 'Excellent'
+            elif chi >= self.thresholds['Good']:
+                return 'Good'
+            elif chi >= self.thresholds['Moderate']:
+                return 'Moderate'
+            elif chi >= self.thresholds['Poor']:
+                return 'Poor'
+            else:
+                return 'Critical'
     
     def get_interpretation(self, status: str) -> str:
         """

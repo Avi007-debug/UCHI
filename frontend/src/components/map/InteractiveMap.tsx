@@ -16,17 +16,20 @@ interface InteractiveMapProps {
   areaType: AreaType;
   bengaluruCHI: number;
   rvceCHI: number;
+  cubbonCHI?: number;
 }
 
 const InteractiveMap = ({ 
   areaType, 
   bengaluruCHI, 
   rvceCHI,
+  cubbonCHI = 0,
 }: InteractiveMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [bangaloreGeo, setBangaloreGeo] = useState<any>(null);
   const [rvceGeo, setRvceGeo] = useState<any>(null);
+  const [cubbonGeo, setCubbonGeo] = useState<any>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
@@ -69,13 +72,19 @@ const InteractiveMap = ({
       fetch("/geojson/rvce.geojson").then(res => {
         if (!res.ok) throw new Error(`Failed to load rvce.geojson: ${res.statusText}`);
         return res.json();
+      }),
+      fetch("/geojson/cubbon.geojson").then(res => {
+        if (!res.ok) throw new Error(`Failed to load cubbon.geojson: ${res.statusText}`);
+        return res.json();
       })
     ])
-    .then(([blrData, rvceData]) => {
+    .then(([blrData, rvceData, cubbonData]) => {
       console.log('Bangalore GeoJSON loaded:', blrData);
       console.log('RVCE GeoJSON loaded:', rvceData);
+      console.log('Cubbon GeoJSON loaded:', cubbonData);
       setBangaloreGeo(blrData.type === 'FeatureCollection' ? blrData.features[0] : blrData);
       setRvceGeo(rvceData.type === 'FeatureCollection' ? rvceData.features[0] : rvceData);
+      setCubbonGeo(cubbonData.type === 'FeatureCollection' ? cubbonData.features[0] : cubbonData);
       setIsLoading(false);
     })
     .catch(err => {
@@ -87,7 +96,7 @@ const InteractiveMap = ({
 
   // Initialize map
   useEffect(() => {
-    if (!leafletLoaded || !mapRef.current || !bangaloreGeo || !rvceGeo || isLoading) {
+    if (!leafletLoaded || !mapRef.current || !bangaloreGeo || !rvceGeo || !cubbonGeo || isLoading) {
       return;
     }
 
@@ -117,18 +126,25 @@ const InteractiveMap = ({
       position: 'topright'
     }).addTo(map);
 
-    // Style function for areas
+    // Style function for areas with area-aware colors
     const bengaluruStyle = {
-      fillColor: getCHIColor(bengaluruCHI),
+      fillColor: getCHIColor(bengaluruCHI, 'city'),
       fillOpacity: 0.5,
       color: '#000',
       weight: 2,
     };
 
     const rvceStyle = {
-      fillColor: getCHIColor(rvceCHI),
+      fillColor: getCHIColor(rvceCHI, 'campus'),
       fillOpacity: 0.7,
       color: '#16a34a',
+      weight: 3,
+    };
+
+    const cubbonStyle = {
+      fillColor: getCHIColor(cubbonCHI, 'park'),
+      fillOpacity: 0.7,
+      color: '#059669',
       weight: 3,
     };
 
@@ -146,7 +162,7 @@ const InteractiveMap = ({
       }
     }).addTo(map);
 
-    // Add RVCE polygon
+    // Add RVCE polygon (shown on Bengaluru view as micro-region)
     const rvceLayer = L.geoJSON(rvceGeo, {
       style: rvceStyle,
       onEachFeature: (feature: any, layer: any) => {
@@ -155,6 +171,22 @@ const InteractiveMap = ({
             <h3 class="font-bold text-lg">RVCE Campus</h3>
             <p class="text-sm mt-1">CHI Score: <span class="font-semibold">${rvceCHI.toFixed(1)}</span></p>
             <p class="text-sm">Status: <span class="font-semibold">${getCHIStatus(rvceCHI)}</span></p>
+            <p class="text-xs text-gray-500 mt-1">Micro-region within Bengaluru</p>
+          </div>
+        `);
+      }
+    }).addTo(map);
+
+    // Add Cubbon Park polygon (shown on Bengaluru view as micro-region)
+    const cubbonLayer = L.geoJSON(cubbonGeo, {
+      style: cubbonStyle,
+      onEachFeature: (feature: any, layer: any) => {
+        layer.bindPopup(`
+          <div class="p-2">
+            <h3 class="font-bold text-lg">Cubbon Park</h3>
+            <p class="text-sm mt-1">CHI Score: <span class="font-semibold">${cubbonCHI > 0 ? cubbonCHI.toFixed(1) : 'Processing...'}</span></p>
+            <p class="text-sm">Status: <span class="font-semibold">${cubbonCHI > 0 ? getCHIStatus(cubbonCHI) : 'Pending'}</span></p>
+            <p class="text-xs text-gray-500 mt-1">300-acre urban lung space</p>
           </div>
         `);
       }
@@ -163,8 +195,10 @@ const InteractiveMap = ({
     // Set view based on area type
     if (areaType === 'Bengaluru') {
       map.fitBounds(bengaluruLayer.getBounds(), { padding: [50, 50] });
-    } else {
+    } else if (areaType === 'RVCE') {
       map.fitBounds(rvceLayer.getBounds(), { padding: [50, 50], maxZoom: 16 });
+    } else if (areaType === 'Cubbon Park') {
+      map.fitBounds(cubbonLayer.getBounds(), { padding: [50, 50], maxZoom: 16 });
     }
 
     // Add legend
@@ -200,7 +234,7 @@ const InteractiveMap = ({
         mapInstanceRef.current = null;
       }
     };
-  }, [leafletLoaded, bangaloreGeo, rvceGeo, areaType, bengaluruCHI, rvceCHI, isLoading]);
+  }, [leafletLoaded, bangaloreGeo, rvceGeo, cubbonGeo, areaType, bengaluruCHI, rvceCHI, cubbonCHI, isLoading]);
 
   const getCHIStatus = (chi: number): string => {
     if (chi >= 75) return 'Excellent';

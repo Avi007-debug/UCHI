@@ -27,14 +27,15 @@ class BatchProcessor:
         self.db = Database()
         self.results = {}
     
-    def process_location(self, location_name, area_type):
+    def process_location(self, location_name, display_name, area_type_semantic):
         """
         Process all images for a specific location
         Returns averaged CHI and metrics
         
         Args:
             location_name: Directory name (e.g., 'bangalore', 'rvce')
-            area_type: Display name for database (e.g., 'Bengaluru', 'RVCE')
+            display_name: Display name for output (e.g., 'Bengaluru', 'RVCE')
+            area_type_semantic: Semantic area type ('city', 'campus', 'park')
         """
         location_dir = self.datasets_dir / location_name
         
@@ -53,7 +54,7 @@ class BatchProcessor:
             print(f"Warning: No images found in {location_dir}")
             return None
         
-        print(f"\nProcessing {area_type}: {len(image_files)} images")
+        print(f"\nProcessing {display_name}: {len(image_files)} images")
         
         # Process each image
         all_metrics = []
@@ -77,20 +78,21 @@ class BatchProcessor:
                 print(f"  ✗ {img_path.name}: Error - {e}")
         
         if not all_metrics:
-            print(f"Error: No images processed successfully for {area_type}")
+            print(f"Error: No images processed successfully for {display_name}")
             return None
         
         # Calculate averages
         avg_coverage = np.mean([m['vegetation_coverage'] for m in all_metrics])
         avg_greenness = np.mean([m['greenness_intensity'] for m in all_metrics])
         
-        # Calculate final CHI
+        # Calculate final CHI with area-aware status
         final_chi = self.calculator.calculate_chi(avg_coverage, avg_greenness)
-        status = self.calculator.get_chi_status(final_chi)
+        status = self.calculator.get_chi_status(final_chi, area_type_semantic)
         interpretation = self.calculator.get_interpretation(status)
         
         result = {
-            'location': area_type,
+            'location': display_name,
+            'area_type': area_type_semantic,
             'chi_score': round(final_chi, 2),
             'status': status,
             'interpretation': interpretation,
@@ -120,7 +122,7 @@ class BatchProcessor:
             # Insert into database with individual arguments
             record_id = self.db.insert_chi_result(
                 image_id=None,  # No image_id for batch processing
-                area_type=result['location'],
+                area_type=result['area_type'],  # 'city', 'campus', or 'park'
                 sub_region=None,  # Can be expanded later
                 chi_value=result['chi_score'],
                 status=result['status'],
@@ -148,14 +150,16 @@ class BatchProcessor:
         print("URBAN CHI - Computer Vision Pipeline")
         print("=" * 60)
         
-        # Map folder names to display names (matching database schema)
+        # Map folder names to (display_name, area_type) tuples
+        # area_type must match database constraint: 'city', 'campus', or 'park'
         locations = [
-            ('bangalore', 'Bengaluru'),
-            ('rvce', 'RVCE')
+            ('bangalore', 'Bengaluru', 'city'),
+            ('rvce', 'RVCE', 'campus'),
+            ('cubbon', 'Cubbon Park', 'park')
         ]
         
-        for folder_name, display_name in locations:
-            result = self.process_location(folder_name, display_name)
+        for folder_name, display_name, area_type in locations:
+            result = self.process_location(folder_name, display_name, area_type)
             if result:
                 self.results[folder_name] = result
                 # Save to database

@@ -28,8 +28,10 @@ export const API_ENDPOINTS = {
   // New read-only endpoints
   getBengaluruCHI: '/chi/bangalore',
   getRVCECHI: '/chi/rvce',
+  getCubbonCHI: '/chi/cubbon',
   getBengaluruGeometry: '/geometry/bangalore',
   getRVCEGeometry: '/geometry/rvce',
+  getCubbonGeometry: '/geometry/cubbon',
 };
 
 /**

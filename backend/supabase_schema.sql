@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS image_metadata (
     id BIGSERIAL PRIMARY KEY,
     filename TEXT NOT NULL,
     storage_path TEXT NOT NULL,
-    area_type TEXT NOT NULL CHECK (area_type IN ('Bengaluru', 'RVCE')),
+    area_type TEXT NOT NULL CHECK (area_type IN ('city', 'campus', 'park')),
     sub_region TEXT,
     date DATE NOT NULL,
     uploaded_at TIMESTAMPTZ DEFAULT NOW(),
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS image_metadata (
 CREATE TABLE IF NOT EXISTS chi_results (
     id BIGSERIAL PRIMARY KEY,
     image_id BIGINT REFERENCES image_metadata(id) ON DELETE CASCADE,
-    area_type TEXT NOT NULL CHECK (area_type IN ('Bengaluru', 'RVCE')),
+    area_type TEXT NOT NULL CHECK (area_type IN ('city', 'campus', 'park')),
     sub_region TEXT,
     chi_value REAL NOT NULL CHECK (chi_value >= 0 AND chi_value <= 100),
     status TEXT NOT NULL CHECK (status IN ('Excellent', 'Good', 'Moderate', 'Poor', 'Critical')),
@@ -33,6 +33,23 @@ CREATE TABLE IF NOT EXISTS chi_results (
     stressed_vegetation REAL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ============================================================================
+-- MIGRATION NOTE: Updating Old Data to New Area Types
+-- ============================================================================
+-- If you have existing data with old area_type values ('Bengaluru', 'RVCE'),
+-- uncomment and run these UPDATE statements ONCE:
+--
+-- UPDATE image_metadata SET area_type = 'city' WHERE area_type = 'Bengaluru';
+-- UPDATE image_metadata SET area_type = 'campus' WHERE area_type = 'RVCE';
+-- UPDATE image_metadata SET area_type = 'park' WHERE area_type = 'Cubbon Park';
+--
+-- UPDATE chi_results SET area_type = 'city' WHERE area_type = 'Bengaluru';
+-- UPDATE chi_results SET area_type = 'campus' WHERE area_type = 'RVCE';
+-- UPDATE chi_results SET area_type = 'park' WHERE area_type = 'Cubbon Park';
+--
+-- The CHECK constraints above will then enforce only the new values.
+-- ============================================================================
 
 -- Indexes for faster queries
 CREATE INDEX IF NOT EXISTS idx_chi_results_area_type ON chi_results(area_type);

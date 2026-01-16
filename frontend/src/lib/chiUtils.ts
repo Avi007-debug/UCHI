@@ -3,6 +3,9 @@
  * 
  * This file ensures consistency across all components
  * for CHI value interpretation and color visualization.
+ * 
+ * Implements area-aware thresholds and smooth gradient coloring
+ * for more accurate representation of vegetation health.
  */
 
 export type CHIStatus = 
@@ -12,9 +15,33 @@ export type CHIStatus =
   | 'Poor' 
   | 'Critical';
 
+export type AreaType = 'city' | 'campus' | 'park';
+
 /**
- * CHI Thresholds
- * Must match backend STATUS_THRESHOLDS in config.py
+ * Area-Aware CHI Thresholds
+ * Different baselines for different area types
+ */
+export const AREA_THRESHOLDS = {
+  city: {
+    RED: 0,      // < 20: Critical/Poor
+    ORANGE: 20,  // 20-35: Poor/Moderate
+    YELLOW: 35,  // > 35: Moderate
+  },
+  campus: {
+    RED: 0,      // < 25: Critical/Poor
+    ORANGE: 25,  // 25-40: Poor/Moderate
+    YELLOW: 40,  // > 40: Moderate
+  },
+  park: {
+    RED: 0,         // < 30: Poor
+    ORANGE: 30,     // 30-36: Moderate
+    YELLOW: 36,     // 36-45: Light Green (Good)
+    GREEN: 45,      // > 45: Green (Excellent)
+  },
+} as const;
+
+/**
+ * Legacy CHI Thresholds (for backward compatibility)
  */
 export const CHI_THRESHOLDS = {
   EXCELLENT: 75,
@@ -50,16 +77,99 @@ export const getCHIStatus = (chi: number): CHIStatus => {
 };
 
 /**
- * Get color for CHI value
- * @param chi - CHI value (0-100)
- * @returns Hex color code
+ * Interpolate between two colors
+ * @param color1 - Start color in hex
+ * @param color2 - End color in hex
+ * @param factor - Interpolation factor (0-1)
+ * @returns Interpolated color in hex
  */
-export const getCHIColor = (chi: number): string => {
-  if (chi >= CHI_THRESHOLDS.EXCELLENT) return CHI_COLORS.EXCELLENT;
-  if (chi >= CHI_THRESHOLDS.GOOD) return CHI_COLORS.GOOD;
-  if (chi >= CHI_THRESHOLDS.MODERATE) return CHI_COLORS.MODERATE;
-  if (chi >= CHI_THRESHOLDS.POOR) return CHI_COLORS.POOR;
-  return CHI_COLORS.CRITICAL;
+const interpolateColor = (color1: string, color2: string, factor: number): string => {
+  const c1 = parseInt(color1.slice(1), 16);
+  const c2 = parseInt(color2.slice(1), 16);
+  
+  const r1 = (c1 >> 16) & 0xff;
+  const g1 = (c1 >> 8) & 0xff;
+  const b1 = c1 & 0xff;
+  
+  const r2 = (c2 >> 16) & 0xff;
+  const g2 = (c2 >> 8) & 0xff;
+  const b2 = c2 & 0xff;
+  
+  const r = Math.round(r1 + (r2 - r1) * factor);
+  const g = Math.round(g1 + (g2 - g1) * factor);
+  const b = Math.round(b1 + (b2 - b1) * factor);
+  
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+};
+
+/**
+ * Get smooth gradient color for CHI value with area-aware thresholds
+ * @param chi - CHI value (0-100)
+ * @param areaType - Area type (city, campus, park) - optional
+ * @returns Hex color code with smooth gradient
+ */
+export const getCHIColor = (chi: number, areaType?: AreaType): string => {
+  // If no area type provided, use legacy global thresholds
+  if (!areaType) {
+    if (chi >= CHI_THRESHOLDS.EXCELLENT) return CHI_COLORS.EXCELLENT;
+    if (chi >= CHI_THRESHOLDS.GOOD) return CHI_COLORS.GOOD;
+    if (chi >= CHI_THRESHOLDS.MODERATE) return CHI_COLORS.MODERATE;
+    if (chi >= CHI_THRESHOLDS.POOR) return CHI_COLORS.POOR;
+    return CHI_COLORS.CRITICAL;
+  }
+
+  // Area-aware smooth gradient coloring
+  const thresholds = AREA_THRESHOLDS[areaType];
+  
+  if (areaType === 'city') {
+    // City: Red → Orange → Yellow (0-20-35+)
+    if (chi < thresholds.ORANGE) {
+      // 0-20: Red
+      return CHI_COLORS.CRITICAL;
+    } else if (chi < thresholds.YELLOW) {
+      // 20-35: Red → Orange gradient
+      const factor = (chi - thresholds.ORANGE) / (thresholds.YELLOW - thresholds.ORANGE);
+      return interpolateColor(CHI_COLORS.POOR, CHI_COLORS.MODERATE, factor);
+    } else {
+      // 35+: Orange → Yellow gradient
+      const factor = Math.min((chi - thresholds.YELLOW) / 30, 1);
+      return interpolateColor(CHI_COLORS.MODERATE, CHI_COLORS.GOOD, factor);
+    }
+  } else if (areaType === 'campus') {
+    // Campus: Red → Orange → Yellow (0-25-40+)
+    if (chi < thresholds.ORANGE) {
+      // 0-25: Red
+      return CHI_COLORS.CRITICAL;
+    } else if (chi < thresholds.YELLOW) {
+      // 25-40: Red → Orange gradient
+      const factor = (chi - thresholds.ORANGE) / (thresholds.YELLOW - thresholds.ORANGE);
+      return interpolateColor(CHI_COLORS.POOR, CHI_COLORS.MODERATE, factor);
+    } else {
+      // 40+: Orange → Yellow gradient
+      const factor = Math.min((chi - thresholds.YELLOW) / 30, 1);
+      return interpolateColor(CHI_COLORS.MODERATE, CHI_COLORS.GOOD, factor);
+    }
+  } else {
+    // Park: Red → Orange → Light Green → Green (0-30-36-45+)
+    const parkThresholds = thresholds as typeof AREA_THRESHOLDS.park;
+    
+    if (chi < parkThresholds.ORANGE) {
+      // 0-30: Red
+      return CHI_COLORS.CRITICAL;
+    } else if (chi < parkThresholds.YELLOW) {
+      // 30-36: Orange gradient
+      const factor = (chi - parkThresholds.ORANGE) / (parkThresholds.YELLOW - parkThresholds.ORANGE);
+      return interpolateColor(CHI_COLORS.MODERATE, CHI_COLORS.GOOD, factor);
+    } else if (chi < parkThresholds.GREEN) {
+      // 36-45: Light Green gradient (Yellow-Green blend)
+      const factor = (chi - parkThresholds.YELLOW) / (parkThresholds.GREEN - parkThresholds.YELLOW);
+      return interpolateColor(CHI_COLORS.GOOD, CHI_COLORS.EXCELLENT, factor * 0.6); // 60% blend for light green
+    } else {
+      // 45+: Green gradient
+      const factor = Math.min((chi - parkThresholds.GREEN) / 30, 1);
+      return interpolateColor(CHI_COLORS.GOOD, CHI_COLORS.EXCELLENT, 0.6 + (factor * 0.4)); // Full green
+    }
+  }
 };
 
 /**

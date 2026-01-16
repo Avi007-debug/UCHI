@@ -146,6 +146,16 @@ export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; 
 };
 
 /**
+ * Get Cubbon Park CHI (Precomputed)
+ * GET /chi/cubbon
+ */
+export const getCubbonCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getCubbonCHI}`);
+  if (!response.ok) throw new Error('Failed to fetch Cubbon Park CHI');
+  return response.json();
+};
+
+/**
  * Get Bengaluru Geometry
  * GET /geometry/bangalore
  */
@@ -162,5 +172,15 @@ export const getBengaluruGeometry = async (): Promise<any> => {
 export const getRVCEGeometry = async (): Promise<any> => {
   const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getRVCEGeometry}`);
   if (!response.ok) throw new Error('Failed to fetch RVCE geometry');
+  return response.json();
+};
+
+/**
+ * Get Cubbon Park Geometry
+ * GET /geometry/cubbon
+ */
+export const getCubbonGeometry = async (): Promise<any> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getCubbonGeometry}`);
+  if (!response.ok) throw new Error('Failed to fetch Cubbon Park geometry');
   return response.json();
 };

@@ -112,8 +112,8 @@ const MapView = ({
       const blrCoords = bangaloreGeo.geometry.coordinates;
       const blrBounds = getBounds(blrCoords);
       
-      // Draw Bengaluru polygon
-      const bengaluruColor = getCHIColor(bengaluruCHI);
+      // Draw Bengaluru polygon with city-aware color
+      const bengaluruColor = getCHIColor(bengaluruCHI, 'city');
       const canvasCoords = latLngToCanvas(blrCoords[0], blrBounds);
       
       ctx.fillStyle = bengaluruColor;

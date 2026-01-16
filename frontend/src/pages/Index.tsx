@@ -14,18 +14,18 @@ import {
 const features = [
   {
     icon: BarChart3,
-    title: 'Real-time Monitoring',
-    description: 'Continuous tracking of vegetation health across urban and campus environments',
+    title: 'Real-time CHI Analysis',
+    description: 'Computer vision pipeline processes satellite imagery to calculate vegetation health scores (0-100)',
   },
   {
     icon: MapPin,
-    title: 'Multi-scale Analysis',
-    description: 'Analyze vegetation from city-wide coverage to specific campus sub-regions',
+    title: 'Multi-location Support',
+    description: 'Monitor Bengaluru city (macro), RVCE campus, and Cubbon Park (micro) with interactive maps',
   },
   {
     icon: GitCompare,
-    title: 'CHI Visualization',
-    description: 'Interactive color-coded maps showing canopy health distribution',
+    title: 'Interactive Visualization',
+    description: 'Leaflet maps with zoom/pan, color-coded CHI status, and CSV/JSON data export',
   },
 ];
 
@@ -33,17 +33,25 @@ const studyAreas = [
   {
     icon: Building2,
     name: 'Bengaluru',
-    type: 'City Overview',
-    description: 'City-wide vegetation health visualization with RVCE campus highlighted as a sub-region',
-    chiRange: '62.5',
+    type: 'Macro Level',
+    description: 'City-wide vegetation analysis with RVCE and Cubbon Park highlighted as micro-regions',
+    chiRange: '25.0',
     link: '/dashboard',
   },
   {
     icon: TreeDeciduous,
-    name: 'RV College of Engineering',
-    type: 'Campus Overview',
-    description: 'Detailed campus-level visualization including sub-regions and green spaces',
-    chiRange: '71.3',
+    name: 'RVCE Campus',
+    type: 'Micro Level',
+    description: '52-acre campus with detailed sub-region vegetation health tracking',
+    chiRange: '22.32',
+    link: '/dashboard',
+  },
+  {
+    icon: TreeDeciduous,
+    name: 'Cubbon Park',
+    type: 'Micro Level',
+    description: '300-acre urban lung space - Bengaluru\'s premier green zone',
+    chiRange: '37.9',
     link: '/dashboard',
   },
 ];
@@ -70,8 +78,8 @@ const Index = () => {
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Real-time visualization dashboard for urban canopy health monitoring. 
-              View precomputed CHI values across Bengaluru city and RVCE campus.
+              Computer vision-based vegetation health monitoring across Bengaluru city, RVCE campus, and Cubbon Park.
+              HSV color segmentation with interactive Leaflet maps and real-time CHI scoring (0-100).
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -94,8 +102,8 @@ const Index = () => {
               Comprehensive Vegetation Monitoring
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our platform provides real-time visualization of precomputed vegetation health data
-              across multiple spatial scales.
+              HSV-based computer vision pipeline processes satellite imagery to calculate Canopy Health Index
+              across macro (city) and micro (campus/park) levels with 100% reproducible results.
             </p>
           </div>
           

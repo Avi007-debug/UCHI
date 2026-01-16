@@ -32,8 +32,15 @@ UCHI is a vegetation health monitoring system that processes satellite/aerial im
 | **Maps** | Leaflet | Geospatial visualization |
 
 ### **Study Areas**
-- **Bengaluru** (City-wide): Macro-level urban vegetation analysis
-- **RVCE Campus** (Institution): Micro-level green space tracking
+- **Bengaluru** (City-wide): Macro-level urban vegetation analysis - Lower thresholds (city baseline)
+- **RVCE Campus** (Institution): Micro-level green space tracking - Moderate thresholds (campus baseline)
+- **Cubbon Park** (Urban Park): Dedicated green space monitoring - Higher thresholds (park baseline)
+
+### **Area-Aware Analysis**
+UCHI uses context-sensitive thresholds to account for different vegetation expectations:
+- **Cities**: Dense urban areas have limited space (lower baseline)
+- **Campuses**: Managed green spaces (moderate baseline)
+- **Parks**: Dedicated vegetation zones (higher baseline)
 
 ---
 
@@ -179,13 +186,32 @@ CHI = (coverage * 0.7) + (greenness_intensity * 0.3)
 
 ### **5. Status Classification**
 
-| CHI Range | Status | Interpretation |
-|-----------|--------|---------------|
-| 80-100 | Excellent | Outstanding urban vegetation |
-| 70-79 | Good | Healthy vegetation cover |
-| 50-69 | Moderate | Adequate but room for improvement |
-| 30-49 | Poor | Limited vegetation requiring intervention |
-| 0-29 | Critical | Severe vegetation deficit |
+**Area-Aware Thresholds** - Different baselines for different contexts:
+
+#### 🏙️ City (e.g., Bengaluru)
+| CHI Range | Color | Status | Interpretation |
+|-----------|-------|--------|---------------|
+| < 20 | 🔴 Red | Critical/Poor | Severe vegetation deficit |
+| 20-35 | 🟠 Orange | Poor/Moderate | Limited but acceptable for urban density |
+| > 35 | 🟡 Yellow | Moderate/Good | Healthy for urban context |
+
+#### 🏫 Campus (e.g., RVCE)
+| CHI Range | Color | Status | Interpretation |
+|-----------|-------|--------|---------------|
+| < 25 | 🔴 Red | Critical/Poor | Needs intervention |
+| 25-40 | 🟠 Orange | Poor/Moderate | Room for improvement |
+| > 40 | 🟡 Yellow | Moderate/Good | Well-maintained green space |
+
+#### 🌳 Park (e.g., Cubbon Park)
+| CHI Range | Color | Status | Interpretation |
+|-----------|-------|--------|---------------|
+| < 30 | 🟠 Orange | Poor | Below park standards |
+| 30-45 | 🟡 Yellow-Green | Moderate/Good | Adequate park vegetation |
+| > 45 | 🟢 Green | Good/Excellent | Exceptional park health |
+
+**Visual Enhancement**: Smooth gradient coloring interpolates between threshold colors for professional visualization.
+
+**Why Area-Aware?** A CHI of 30 means "Good" for a dense city (limited space), but "Poor" for a park (should have high vegetation). Context-sensitive thresholds provide accurate assessment.
 
 ---
 
@@ -480,6 +506,94 @@ python app.py
 ```bash
 pip install opencv-python numpy
 ```
+
+---
+
+## 🎨 Color Scheme & Visualization
+
+### **Area-Aware Color Coding System**
+
+UCHI implements **context-sensitive color thresholds** for accurate vegetation assessment:
+
+#### Visual Color Mapping
+
+**🏙️ City (Bengaluru)**
+| CHI Range | Color | Status | Visual |
+|-----------|-------|--------|--------|
+| < 20 | 🔴 Red | Critical/Poor | `rgb(239, 68, 68)` |
+| 20-35 | 🟠 Orange | Poor/Moderate | Gradient: Red → Yellow |
+| > 35 | 🟡 Yellow | Moderate/Good | `rgb(234, 179, 8)` |
+
+**🏫 Campus (RVCE)**
+| CHI Range | Color | Status | Visual |
+|-----------|-------|--------|--------|
+| < 25 | 🔴 Red | Critical/Poor | `rgb(239, 68, 68)` |
+| 25-40 | 🟠 Orange | Poor/Moderate | Gradient: Red → Yellow |
+| > 40 | 🟡 Yellow | Moderate/Good | `rgb(234, 179, 8)` |
+
+**🌳 Park (Cubbon Park)**
+| CHI Range | Color | Status | Visual |
+|-----------|-------|--------|--------|
+| < 30 | 🔴 Red | Poor | `rgb(239, 68, 68)` |
+| 30-36 | 🟠 Orange | Moderate | `rgb(249, 115, 22)` |
+| 36-45 | 🟢 Light Green | Good | Gradient: Yellow → Green |
+| > 45 | 🟢 Dark Green | Excellent | `rgb(34, 197, 94)` |
+
+### **Gradient Color Interpolation**
+
+Colors blend smoothly between thresholds (no harsh boundaries):
+
+```typescript
+// Example: Cubbon Park at CHI 37.86
+// Calculation: 37.86 falls in 36-45 range
+// Result: Light green (60% yellow + 40% green blend)
+const color = interpolateColor('#eab308', '#22c55e', 0.2);
+// Output: '#d4c825' (light green)
+```
+
+### **Frontend Display**
+
+The color scheme guide is displayed on:
+- **Dashboard Page**: Interactive guide with all thresholds
+- **Results Page**: Comparison bars showing area-aware baselines
+- **Map Components**: Polygon fills using area-specific colors
+
+**Component**: `ColorSchemeGuide.tsx`
+- Shows all 3 area types side-by-side
+- Live color swatches with gradient examples
+- Explanatory text for scientific justification
+
+### **Why Area-Aware Colors?**
+
+**Problem with Global Thresholds:**
+```
+❌ Old System: CHI 30 → Red (Poor) for ALL areas
+   - Bengaluru 25.0 → Red
+   - RVCE 22.32 → Red
+   - Cubbon 37.86 → Red
+   Result: Everything looks bad, no differentiation
+```
+
+**Solution with Area-Aware Thresholds:**
+```
+✅ New System: CHI interpreted in context
+   - Bengaluru 25.0 → Orange (Moderate for city)
+   - RVCE 22.32 → Red (Poor for campus)
+   - Cubbon 37.86 → Light Green (Good for park)
+   Result: Accurate, contextual assessment
+```
+
+### **Scientific Basis**
+
+**Urban Ecology Research:**
+- Land-use type affects baseline NDVI values (Tucker et al., 2005)
+- Dense cities have lower vegetation potential than parks
+- Context-dependent thresholds improve accuracy (Xu et al., 2013)
+
+**Implementation Details:**
+- **Frontend**: `chiUtils.ts` - `getCHIColor(chi, areaType)`
+- **Backend**: `chi_calculation.py` - `get_chi_status(chi, area_type)`
+- **Maps**: Polygon colors automatically adjust based on area type
 
 ---
 

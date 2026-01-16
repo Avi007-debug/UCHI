@@ -163,6 +163,45 @@ def get_rvce_chi():
     return jsonify(response), 200
 
 
+@app.route('/chi/cubbon', methods=['GET'])
+def get_cubbon_chi():
+    """
+    Get Cubbon Park Health Index
+    Returns real data from CV pipeline
+    """
+    results = load_chi_results()
+    
+    if results is None or 'cubbon' not in results:
+        return jsonify({
+            'error': 'No data available',
+            'message': 'Run the CV pipeline first: python run_cv_pipeline.py',
+            'chi': 0,
+            'category': 'no_data',
+            'metrics': {},
+            'timestamp': datetime.now().isoformat()
+        }), 503
+    
+    cubbon_data = results['cubbon']
+    
+    response = {
+        'chi': cubbon_data['chi_score'],
+        'category': cubbon_data['status'],
+        'interpretation': cubbon_data['interpretation'],
+        'areaType': 'Cubbon Park',
+        'timestamp': cubbon_data['timestamp'],
+        'trend': calculate_trend(cubbon_data['chi_score']),
+        'metrics': {
+            'vegetation_coverage': cubbon_data['metrics']['vegetation_coverage'],
+            'greenness_intensity': cubbon_data['metrics']['greenness_intensity'],
+            'images_processed': cubbon_data['images_processed']
+        },
+        'location': 'Cubbon Park',
+        'images_analyzed': cubbon_data['images_processed']
+    }
+    
+    return jsonify(response), 200
+
+
 @app.route('/api/all-locations', methods=['GET'])
 def get_all_locations():
     """Get CHI data for all locations"""
@@ -241,6 +280,42 @@ def get_rvce_geometry():
     return jsonify(geometry), 200
 
 
+@app.route('/geometry/cubbon', methods=['GET'])
+def get_cubbon_geometry():
+    """
+    Get Cubbon Park boundary geometry
+    GET /geometry/cubbon
+    
+    Returns:
+        GeoJSON polygon for Cubbon Park boundary
+    """
+    # Cubbon Park boundary (approximate coordinates)
+    geometry = {
+        "type": "Feature",
+        "properties": {
+            "name": "Cubbon Park",
+            "areaType": "park"
+        },
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[
+                [77.5890, 12.9681],
+                [77.5960, 12.9742],
+                [77.5990, 12.9768],
+                [77.5972, 12.9806],
+                [77.5944, 12.9791],
+                [77.5921, 12.9766],
+                [77.5908, 12.9776],
+                [77.5886, 12.9744],
+                [77.5882, 12.9716],
+                [77.5890, 12.9681]
+            ]]
+        }
+    }
+    
+    return jsonify(geometry), 200
+
+
 @app.route('/get-results', methods=['GET'])
 def get_results():
     """
@@ -299,9 +374,11 @@ def home():
             '/health': 'Health check',
             '/chi/bangalore': 'Get Bengaluru City Health Index',
             '/chi/rvce': 'Get RVCE Campus Health Index',
+            '/chi/cubbon': 'Get Cubbon Park Health Index',
             '/api/all-locations': 'Get all locations data',
             '/geometry/bangalore': 'Get Bengaluru GeoJSON',
             '/geometry/rvce': 'Get RVCE GeoJSON',
+            '/geometry/cubbon': 'Get Cubbon Park GeoJSON',
             '/get-results': 'Get all CHI results from database',
             '/get-bangalore-summary': 'Get Bengaluru summary',
             '/get-rvce-summary': 'Get RVCE summary',

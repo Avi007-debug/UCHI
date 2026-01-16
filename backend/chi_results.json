@@ -1,9 +1,10 @@
 {
   "bangalore": {
     "location": "Bengaluru",
+    "area_type": "city",
     "chi_score": 25.0,
-    "status": "Critical",
-    "interpretation": "Severe vegetation deficit threatening urban health",
+    "status": "Poor",
+    "interpretation": "Limited vegetation cover requiring intervention",
     "metrics": {
       "vegetation_coverage": 20.37,
       "greenness_intensity": 35.8
@@ -11,11 +12,12 @@
     "images_processed": 23,
     "images_filtered": 1,
     "total_images": 24,
-    "timestamp": "2026-01-16T18:40:54.379409",
+    "timestamp": "2026-01-16T21:10:48.894439",
     "date": "2026-01-16"
   },
   "rvce": {
     "location": "RVCE",
+    "area_type": "campus",
     "chi_score": 22.32,
     "status": "Critical",
     "interpretation": "Severe vegetation deficit threatening urban health",
@@ -24,9 +26,25 @@
       "greenness_intensity": 34.24
     },
     "images_processed": 25,
-    "images_filtered": 5,
-    "total_images": 30,
-    "timestamp": "2026-01-16T18:40:55.075044",
+    "images_filtered": 2,
+    "total_images": 27,
+    "timestamp": "2026-01-16T21:10:50.116659",
+    "date": "2026-01-16"
+  },
+  "cubbon": {
+    "location": "Cubbon Park",
+    "area_type": "park",
+    "chi_score": 37.86,
+    "status": "Good",
+    "interpretation": "Healthy vegetation cover supporting urban ecosystem services",
+    "metrics": {
+      "vegetation_coverage": 36.4,
+      "greenness_intensity": 41.26
+    },
+    "images_processed": 24,
+    "images_filtered": 0,
+    "total_images": 24,
+    "timestamp": "2026-01-16T21:10:50.404690",
     "date": "2026-01-16"
   }
 }

@@ -1,6 +1,6 @@
 // Type definitions for Urban Canopy Health Index application
 
-export type AreaType = 'Bengaluru' | 'RVCE';
+export type AreaType = 'Bengaluru' | 'RVCE' | 'Cubbon Park';
 
 export type RVCESubRegion = 
   | 'Campus' 
@@ -8,6 +8,13 @@ export type RVCESubRegion =
   | 'Parking' 
   | 'Hostel' 
   | 'Roadside';
+
+export type CubbonSubRegion =
+  | 'North Zone'
+  | 'Central Zone'
+  | 'South Zone'
+  | 'East Zone'
+  | 'West Zone';
 
 export type CHIStatus = 
   | 'Excellent' 

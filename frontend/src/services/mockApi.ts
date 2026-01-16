@@ -292,10 +292,26 @@ export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; 
 };
 
 /**
+ * API: Get Cubbon Park CHI (Precomputed)
+ * GET /chi/cubbon
+ */
+export const getCubbonCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  await delay(300);
+  const chi = 37.86;
+  const category = getCHIStatus(chi);
+  return {
+    chi,
+    category,
+    interpretation: getCHIInterpretation(category),
+    areaType: 'Cubbon Park',
+  };
+};
+
+/**
  * API: Get Bengaluru Geometry
  * GET /geometry/bangalore
  */
-export const getBangaluruGeometry = async (): Promise<any> => {
+export const getBengaluruGeometry = async (): Promise<any> => {
   await delay(200);
   return {
     type: "Feature",
@@ -336,6 +352,31 @@ export const getRVCEGeometry = async (): Promise<any> => {
         [77.5020, 12.9210],
         [77.4987, 12.9210],
         [77.4987, 12.9236]
+      ]]
+    }
+  };
+};
+
+/**
+ * API: Get Cubbon Park Geometry
+ * GET /geometry/cubbon
+ */
+export const getCubbonGeometry = async (): Promise<any> => {
+  await delay(200);
+  return {
+    type: "Feature",
+    properties: {
+      name: "Cubbon Park",
+      areaType: "park"
+    },
+    geometry: {
+      type: "Polygon",
+      coordinates: [[
+        [77.5920, 12.9784],
+        [77.5995, 12.9784],
+        [77.5995, 12.9716],
+        [77.5920, 12.9716],
+        [77.5920, 12.9784]
       ]]
     }
   };
