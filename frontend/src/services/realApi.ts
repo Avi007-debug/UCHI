@@ -124,3 +124,43 @@ export const getCHIInterpretation = (status: CHIStatus): string => {
   };
   return interpretations[status];
 };
+
+/**
+ * Get Bengaluru CHI (Precomputed)
+ * GET /chi/bangalore
+ */
+export const getBangaluruCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getBangaluruCHI}`);
+  if (!response.ok) throw new Error('Failed to fetch Bengaluru CHI');
+  return response.json();
+};
+
+/**
+ * Get RVCE CHI (Precomputed)
+ * GET /chi/rvce
+ */
+export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getRVCECHI}`);
+  if (!response.ok) throw new Error('Failed to fetch RVCE CHI');
+  return response.json();
+};
+
+/**
+ * Get Bengaluru Geometry
+ * GET /geometry/bangalore
+ */
+export const getBangaluruGeometry = async (): Promise<any> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getBangaluruGeometry}`);
+  if (!response.ok) throw new Error('Failed to fetch Bengaluru geometry');
+  return response.json();
+};
+
+/**
+ * Get RVCE Geometry
+ * GET /geometry/rvce
+ */
+export const getRVCEGeometry = async (): Promise<any> => {
+  const response = await fetch(`${BACKEND_URL}${API_ENDPOINTS.getRVCEGeometry}`);
+  if (!response.ok) throw new Error('Failed to fetch RVCE geometry');
+  return response.json();
+};

@@ -258,3 +258,85 @@ export const getTemporalComparison = async (region: string): Promise<TemporalCom
     direction: change > 0 ? 'increase' : change < 0 ? 'decrease' : 'stable',
   };
 };
+
+/**
+ * API: Get Bengaluru CHI (Precomputed)
+ * GET /chi/bangalore
+ */
+export const getBengaluruCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  await delay(300);
+  const chi = 62.5;
+  const category = getCHIStatus(chi);
+  return {
+    chi,
+    category,
+    interpretation: getCHIInterpretation(category),
+    areaType: 'Bengaluru',
+  };
+};
+
+/**
+ * API: Get RVCE CHI (Precomputed)
+ * GET /chi/rvce
+ */
+export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
+  await delay(300);
+  const chi = 71.3;
+  const category = getCHIStatus(chi);
+  return {
+    chi,
+    category,
+    interpretation: getCHIInterpretation(category),
+    areaType: 'RVCE',
+  };
+};
+
+/**
+ * API: Get Bengaluru Geometry
+ * GET /geometry/bangalore
+ */
+export const getBangaluruGeometry = async (): Promise<any> => {
+  await delay(200);
+  return {
+    type: "Feature",
+    properties: {
+      name: "Bengaluru",
+      areaType: "city"
+    },
+    geometry: {
+      type: "Polygon",
+      coordinates: [[
+        [77.4601, 12.8340],
+        [77.7600, 12.8340],
+        [77.7600, 12.7340],
+        [77.4601, 12.7340],
+        [77.4601, 12.8340]
+      ]]
+    }
+  };
+};
+
+/**
+ * API: Get RVCE Geometry
+ * GET /geometry/rvce
+ */
+export const getRVCEGeometry = async (): Promise<any> => {
+  await delay(200);
+  return {
+    type: "Feature",
+    properties: {
+      name: "RV College of Engineering",
+      areaType: "campus"
+    },
+    geometry: {
+      type: "Polygon",
+      coordinates: [[
+        [77.4987, 12.9236],
+        [77.5020, 12.9236],
+        [77.5020, 12.9210],
+        [77.4987, 12.9210],
+        [77.4987, 12.9236]
+      ]]
+    }
+  };
+};

@@ -62,133 +62,110 @@ def health_check():
     }), 200
 
 
-@app.route('/upload-image', methods=['POST'])
-def upload_image():
+@app.route('/chi/bangalore', methods=['GET'])
+def get_bangalore_chi():
     """
-    Image upload endpoint
-    POST /upload-image
-    
-    Expected form data:
-        - file: Image file (.jpg or .png)
-        - area_type: "Bengaluru" or "RVCE"
-        - sub_region: (optional) RVCE sub-region
-        - date: Date of image capture (YYYY-MM-DD)
+    Get precomputed CHI for Bengaluru
+    GET /chi/bangalore
     
     Returns:
-        JSON with CHI result
-        
-    Future integration:
-        1. preprocessing.py - normalize and prepare image
-        2. vegetation_detection.py - detect and segment vegetation
-        3. chi_calculation.py - calculate actual CHI from vegetation data
+        JSON with CHI value and category
     """
-    try:
-        # Validate request
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file provided'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
-        
-        # Get metadata
-        area_type = request.form.get('area_type')
-        sub_region = request.form.get('sub_region')
-        date = request.form.get('date')
-        
-        # Validate area type
-        if area_type not in ['Bengaluru', 'RVCE']:
-            return jsonify({'error': 'Invalid area_type. Must be Bengaluru or RVCE'}), 400
-        
-        # Validate RVCE sub-region if provided
-        valid_sub_regions = ['Campus', 'Sports Ground', 'Parking', 'Hostel', 'Roadside']
-        if area_type == 'RVCE' and sub_region not in valid_sub_regions:
-            return jsonify({'error': f'Invalid sub_region. Must be one of: {valid_sub_regions}'}), 400
-        
-        # Upload to Supabase Storage
-        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-        storage_path = f"{area_type}/{filename}"
-        
-        # Read file content
-        file_content = file.read()
-        
-        # Upload to Supabase Storage bucket
-        try:
-            supabase.storage.from_(Config.SUPABASE_STORAGE_BUCKET).upload(
-                storage_path,
-                file_content,
-                {"content-type": file.content_type}
-            )
-        except Exception as upload_error:
-            print(f"⚠️  Storage upload warning: {upload_error}")
-            # Continue anyway - storage might already exist or be configured differently
-        
-        # TODO: AI Integration Point
-        # Uncomment and implement when AI modules are ready
-        # ---------------------------------------------------
-        # Step 1: Preprocess image
-        # processed_image = preprocessing.preprocess_image(filepath)
-        
-        # Step 2: Detect vegetation
-        # vegetation_mask = vegetation_detection.detect_vegetation(processed_image)
-        
-        # Step 3: Calculate CHI
-        # chi_data = chi_calculation.calculate_chi(processed_image, vegetation_mask)
-        # ---------------------------------------------------
-        
-        # For now, generate dummy CHI
-        region = sub_region if sub_region else area_type
-        chi_value = chi_gen.generate_chi(region)
-        status = chi_gen.get_status(chi_value)
-        interpretation = chi_gen.get_interpretation(status)
-        
-        # Generate dummy vegetation metrics
-        vegetation_coverage = 30 + (chi_value / 100) * 50
-        healthy_vegetation = 40 + (chi_value / 100) * 40
-        stressed_vegetation = 100 - healthy_vegetation
-        
-        # Store metadata in Supabase database
-        image_id = db.insert_image_metadata(
-            filename=filename,
-            storage_path=storage_path,  # Supabase Storage path
-            area_type=area_type,
-            sub_region=sub_region,
-            date=date
-        )
-        
-        # Store result
-        result_id = db.insert_chi_result(
-            image_id=image_id,
-            area_type=area_type,
-            sub_region=sub_region,
-            chi_value=chi_value,
-            status=status,
-            interpretation=interpretation,
-            date=date,
-            vegetation_coverage=vegetation_coverage,
-            healthy_vegetation=healthy_vegetation,
-            stressed_vegetation=stressed_vegetation
-        )
-        
-        # Return result
-        result = {
-            'id': result_id,
-            'imageId': image_id,
-            'areaType': area_type,
-            'subRegion': sub_region,
-            'chiValue': chi_value,
-            'status': status,
-            'interpretation': interpretation,
-            'date': date,
-            'vegetationCoverage': round(vegetation_coverage, 2),
-            'healthyVegetation': round(healthy_vegetation, 2),
-            'stressedVegetation': round(stressed_vegetation, 2)
+    # Precomputed CHI value for Bengaluru
+    chi_value = 62.5
+    status = chi_gen.get_status(chi_value)
+    
+    return jsonify({
+        'chi': chi_value,
+        'category': status,
+        'interpretation': chi_gen.get_interpretation(status),
+        'areaType': 'Bengaluru'
+    }), 200
+
+
+@app.route('/chi/rvce', methods=['GET'])
+def get_rvce_chi():
+    """
+    Get precomputed CHI for RVCE
+    GET /chi/rvce
+    
+    Returns:
+        JSON with CHI value and category
+    """
+    # Precomputed CHI value for RVCE
+    chi_value = 71.3
+    status = chi_gen.get_status(chi_value)
+    
+    return jsonify({
+        'chi': chi_value,
+        'category': status,
+        'interpretation': chi_gen.get_interpretation(status),
+        'areaType': 'RVCE'
+    }), 200
+
+
+@app.route('/geometry/bangalore', methods=['GET'])
+def get_bangalore_geometry():
+    """
+    Get Bengaluru boundary geometry
+    GET /geometry/bangalore
+    
+    Returns:
+        GeoJSON polygon for Bengaluru city boundary
+    """
+    # Simplified Bengaluru boundary (approximate coordinates)
+    # In production, this would be loaded from a GeoJSON file
+    geometry = {
+        "type": "Feature",
+        "properties": {
+            "name": "Bengaluru",
+            "areaType": "city"
+        },
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[
+                [77.4601, 12.8340],  # Northwest
+                [77.7600, 12.8340],  # Northeast
+                [77.7600, 12.7340],  # Southeast
+                [77.4601, 12.7340],  # Southwest
+                [77.4601, 12.8340]   # Close polygon
+            ]]
         }
-        
-        return jsonify(result), 201
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    }
+    
+    return jsonify(geometry), 200
+
+
+@app.route('/geometry/rvce', methods=['GET'])
+def get_rvce_geometry():
+    """
+    Get RVCE campus boundary geometry
+    GET /geometry/rvce
+    
+    Returns:
+        GeoJSON polygon for RVCE campus boundary
+    """
+    # RVCE campus boundary (approximate coordinates)
+    # In production, this would be loaded from a GeoJSON file
+    geometry = {
+        "type": "Feature",
+        "properties": {
+            "name": "RV College of Engineering",
+            "areaType": "campus"
+        },
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[
+                [77.4987, 12.9236],  # Northwest corner
+                [77.5020, 12.9236],  # Northeast corner
+                [77.5020, 12.9210],  # Southeast corner
+                [77.4987, 12.9210],  # Southwest corner
+                [77.4987, 12.9236]   # Close polygon
+            ]]
+        }
+    }
+    
+    return jsonify(geometry), 200
 
 
 @app.route('/get-results', methods=['GET'])

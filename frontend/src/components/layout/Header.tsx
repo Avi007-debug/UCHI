@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MapPin, Upload, BarChart3, GitCompare } from 'lucide-react';
+import { Home, MapPin, LayoutDashboard, BarChart3, GitCompare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/study-area', label: 'Study Area', icon: MapPin },
-  { path: '/upload', label: 'Upload', icon: Upload },
   { path: '/results', label: 'Results', icon: BarChart3 },
   { path: '/compare', label: 'Compare', icon: GitCompare },
 ];

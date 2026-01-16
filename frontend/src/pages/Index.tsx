@@ -6,27 +6,26 @@ import {
   Building2, 
   ArrowRight, 
   TreeDeciduous, 
-  BarChart3, 
-  Upload, 
+  BarChart3,
   GitCompare,
   CheckCircle2
 } from 'lucide-react';
 
 const features = [
   {
-    icon: Upload,
-    title: 'Image Upload',
-    description: 'Upload satellite or aerial imagery for instant vegetation analysis',
+    icon: BarChart3,
+    title: 'Real-time Monitoring',
+    description: 'Continuous tracking of vegetation health across urban and campus environments',
   },
   {
-    icon: BarChart3,
-    title: 'CHI Calculation',
-    description: 'Advanced algorithms compute Canopy Health Index from spectral data',
+    icon: MapPin,
+    title: 'Multi-scale Analysis',
+    description: 'Analyze vegetation from city-wide coverage to specific campus sub-regions',
   },
   {
     icon: GitCompare,
-    title: 'Temporal Analysis',
-    description: 'Compare vegetation health over time to track environmental changes',
+    title: 'CHI Visualization',
+    description: 'Interactive color-coded maps showing canopy health distribution',
   },
 ];
 
@@ -34,18 +33,18 @@ const studyAreas = [
   {
     icon: Building2,
     name: 'Bengaluru',
-    type: 'Macro Level',
-    description: 'City-wide vegetation health assessment covering major green corridors and urban forests',
-    chiRange: '55-70',
-    link: '/study-area?type=bengaluru',
+    type: 'City Overview',
+    description: 'City-wide vegetation health visualization with RVCE campus highlighted as a sub-region',
+    chiRange: '62.5',
+    link: '/dashboard',
   },
   {
     icon: TreeDeciduous,
     name: 'RV College of Engineering',
-    type: 'Micro Level',
-    description: 'Detailed analysis of campus vegetation including specific zones and green spaces',
-    chiRange: '40-80',
-    link: '/study-area?type=rvce',
+    type: 'Campus Overview',
+    description: 'Detailed campus-level visualization including sub-regions and green spaces',
+    chiRange: '71.3',
+    link: '/dashboard',
   },
 ];
 
@@ -71,20 +70,15 @@ const Index = () => {
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Advanced vegetation health monitoring for sustainable urban development. 
-              Analyze satellite imagery to assess green cover quality across Bengaluru and RVCE campus.
+              Real-time visualization dashboard for urban canopy health monitoring. 
+              View precomputed CHI values across Bengaluru city and RVCE campus.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
               <Button variant="nature" size="xl" asChild>
-                <Link to="/study-area">
-                  Get Started
+                <Link to="/dashboard">
+                  View Dashboard
                   <ArrowRight className="h-5 w-5 ml-2" />
-                </Link>
-              </Button>
-              <Button variant="outline" size="xl" asChild>
-                <Link to="/upload">
-                  Upload Image
                 </Link>
               </Button>
             </div>
@@ -97,11 +91,11 @@ const Index = () => {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Comprehensive Vegetation Analysis
+              Comprehensive Vegetation Monitoring
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our platform combines satellite imagery processing with advanced algorithms 
-              to deliver accurate vegetation health assessments.
+              Our platform provides real-time visualization of precomputed vegetation health data
+              across multiple spatial scales.
             </p>
           </div>
           
@@ -200,10 +194,10 @@ const Index = () => {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { step: '01', title: 'Image Upload', desc: 'Upload satellite imagery' },
-                { step: '02', title: 'Preprocessing', desc: 'Normalize and enhance' },
-                { step: '03', title: 'Detection', desc: 'AI vegetation segmentation' },
-                { step: '04', title: 'CHI Output', desc: 'Health index calculation' },
+                { step: '01', title: 'Data Collection', desc: 'Satellite imagery acquisition' },
+                { step: '02', title: 'Preprocessing', desc: 'Image normalization' },
+                { step: '03', title: 'AI Analysis', desc: 'Vegetation segmentation' },
+                { step: '04', title: 'CHI Calculation', desc: 'Health index generation' },
               ].map((item, index) => (
                 <div 
                   key={item.step}
@@ -225,13 +219,10 @@ const Index = () => {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-6 w-6 text-accent mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-foreground mb-1">Ready for AI Integration</h4>
+                  <h4 className="font-semibold text-foreground mb-1">Read-Only Visualization</h4>
                   <p className="text-sm text-muted-foreground">
-                    This system uses dummy CHI values. Backend placeholders for 
-                    <code className="mx-1 px-2 py-0.5 rounded bg-secondary text-secondary-foreground text-xs">preprocessing.py</code>,
-                    <code className="mx-1 px-2 py-0.5 rounded bg-secondary text-secondary-foreground text-xs">vegetation_detection.py</code>, and
-                    <code className="mx-1 px-2 py-0.5 rounded bg-secondary text-secondary-foreground text-xs">chi_calculation.py</code>
-                    are prepared for future AI model integration.
+                    This dashboard displays precomputed CHI values. All vegetation analysis is performed offline
+                    using advanced AI models. The dashboard provides real-time visualization without requiring user uploads.
                   </p>
                 </div>
               </div>

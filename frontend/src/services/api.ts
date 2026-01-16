@@ -26,6 +26,10 @@ export const {
   getTemporalComparison,
   getCHIStatus,
   getCHIInterpretation,
+  getBengaluruCHI,
+  getRVCECHI,
+  getBangaluruGeometry,
+  getRVCEGeometry,
 } = api;
 
 // Log which API is being used
