@@ -1,0 +1,30 @@
+{
+  "bangalore": {
+    "location": "Bengaluru",
+    "chi_score": 24.38,
+    "status": "Critical",
+    "interpretation": "Severe vegetation deficit threatening urban health",
+    "metrics": {
+      "vegetation_coverage": 19.56,
+      "greenness_intensity": 35.64
+    },
+    "images_processed": 24,
+    "total_images": 24,
+    "timestamp": "2026-01-16T18:28:26.174537",
+    "date": "2026-01-16"
+  },
+  "rvce": {
+    "location": "RVCE",
+    "chi_score": 21.49,
+    "status": "Critical",
+    "interpretation": "Severe vegetation deficit threatening urban health",
+    "metrics": {
+      "vegetation_coverage": 16.11,
+      "greenness_intensity": 34.04
+    },
+    "images_processed": 27,
+    "total_images": 27,
+    "timestamp": "2026-01-16T18:28:27.921113",
+    "date": "2026-01-16"
+  }
+}

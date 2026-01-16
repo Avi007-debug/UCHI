@@ -1,146 +1,132 @@
 """
-Vegetation Detection Module
-PLACEHOLDER - To be implemented with AI/ML models
-
-This module will handle:
-1. Vegetation segmentation from satellite/aerial imagery
-2. Healthy vs stressed vegetation classification
-3. Vegetation coverage calculation
-4. Species identification (optional advanced feature)
-
-Future Implementation Approaches:
-1. Deep Learning: Use U-Net, DeepLab, or similar segmentation models
-2. Traditional CV: Use color-based segmentation (green channel, HSV)
-3. Hybrid: Combine multiple approaches for robust detection
-
-Recommended Models:
-- U-Net for semantic segmentation
-- ResNet/EfficientNet for classification
-- Custom trained models on vegetation datasets
+Real Computer Vision Pipeline for CHI Calculation
+Minimal, rule-based vegetation detection from RGB images
 """
 
-try:
-    import numpy as np
-except Exception:
-    np = None
-from typing import Dict, Tuple, Any
+import cv2
+import numpy as np
+from typing import Dict, Tuple
 
 
-def detect_vegetation(image: Any) -> Any:
-    """
-    Detect and segment vegetation in image
+class VegetationDetector:
+    """Rule-based vegetation detection using HSV color space"""
     
-    TODO: Implement actual vegetation detection using AI/ML
+    def __init__(self):
+        # HSV color range for green vegetation
+        # Adjusted thresholds for better detection including yellowish vegetation
+        # H: 25-95 (green to yellow-green hues)
+        # S: 30-255 (lower saturation to catch lighter greens)
+        # V: 30-255 (lower value to catch shadowed vegetation)
+        self.lower_green = np.array([25, 30, 30])
+        self.upper_green = np.array([95, 255, 255])
     
-    Approaches:
-    1. Deep Learning (Recommended):
-       - Load pre-trained segmentation model (U-Net, DeepLabV3)
-       - Run inference on preprocessed image
-       - Return binary mask of vegetation areas
-       
-    2. Traditional Computer Vision:
-       - Convert to HSV color space
-       - Threshold green channel
-       - Apply morphological operations
-       - Return vegetation mask
-    
-    Args:
-        image: Preprocessed image (numpy array)
+    def preprocess(self, image, target_size=(512, 512)):
+        """
+        A. Minimal preprocessing
+        - Resize image
+        - Convert RGB to HSV
+        """
+        # Resize to standard size
+        resized = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
         
-    Returns:
-        Binary mask where 1 = vegetation, 0 = non-vegetation
+        # Convert to HSV color space
+        hsv = cv2.cvtColor(resized, cv2.COLOR_BGR2HSV)
         
-    Example implementation (commented out):
-    ```python
-    import tensorflow as tf
+        return resized, hsv
     
-    # Load trained model
-    model = tf.keras.models.load_model('models/vegetation_segmentation.h5')
-    
-    # Prepare input
-    img_input = np.expand_dims(image, axis=0)
-    
-    # Predict
-    mask = model.predict(img_input)[0]
-    
-    # Threshold
-    vegetation_mask = (mask > 0.5).astype(np.uint8)
-    
-    return vegetation_mask
-    ```
-    """
-    print("[VEGETATION DETECTION] Detecting vegetation in image")
-    print("[VEGETATION DETECTION] ⚠️ Using placeholder - implement AI model")
-
-    # If numpy is unavailable, return a minimal placeholder
-    if np is None:
-        print('[VEGETATION DETECTION] NumPy not available — returning minimal placeholder mask')
-        return [[0]]
-
-    # Placeholder: return dummy mask
-    height, width = image.shape[:2]
-    dummy_mask = np.random.rand(height, width) > 0.6
-
-    return dummy_mask.astype(np.uint8)
-
-
-def classify_vegetation_health(image: Any, mask: Any) -> Tuple[Any, Any]:
-    """
-    Classify vegetation into healthy and stressed categories
-    
-    TODO: Implement vegetation health classification
-    
-    Indicators of stressed vegetation:
-    - Yellowing (chlorosis)
-    - Browning (necrosis)
-    - Reduced reflectance in NIR band
-    - Lower NDVI values
-    
-    Args:
-        image: Original preprocessed image
-        mask: Vegetation segmentation mask
+    def detect_vegetation(self, hsv_image):
+        """
+        B. Vegetation detection (CORE)
+        - Generate vegetation mask using HSV color range
+        - Count vegetation vs total pixels
+        """
+        # Create binary mask for green vegetation
+        vegetation_mask = cv2.inRange(hsv_image, self.lower_green, self.upper_green)
         
-    Returns:
-        Tuple of (healthy_mask, stressed_mask)
+        # Count pixels
+        total_pixels = vegetation_mask.size
+        vegetation_pixels = np.count_nonzero(vegetation_mask)
         
-    Example implementation:
-    ```python
-    # Extract vegetation pixels
-    veg_pixels = image[mask == 1]
+        # Calculate coverage percentage
+        vegetation_coverage = (vegetation_pixels / total_pixels) * 100
+        
+        return vegetation_mask, vegetation_pixels, total_pixels, vegetation_coverage
     
-    # Calculate health indicators
-    # E.g., green ratio, NDVI if multispectral
-    green_ratio = veg_pixels[:, :, 1] / (veg_pixels.sum(axis=2) + 1e-6)
+    def calculate_greenness_intensity(self, hsv_image, vegetation_mask):
+        """
+        Calculate average greenness intensity from vegetation areas
+        Uses saturation and value channels as proxy for vegetation health
+        """
+        # Extract S and V channels
+        saturation = hsv_image[:, :, 1]
+        value = hsv_image[:, :, 2]
+        
+        # Get vegetation pixels only
+        veg_saturation = saturation[vegetation_mask > 0]
+        veg_value = value[vegetation_mask > 0]
+        
+        if len(veg_saturation) == 0:
+            return 0.0
+        
+        # Average saturation and value (normalized to 0-100)
+        avg_saturation = np.mean(veg_saturation) / 255 * 100
+        avg_value = np.mean(veg_value) / 255 * 100
+        
+        # Greenness intensity: weighted combination
+        greenness_intensity = (avg_saturation * 0.6 + avg_value * 0.4)
+        
+        return greenness_intensity
     
-    # Classify
-    healthy = green_ratio > threshold
-    stressed = ~healthy
-    
-    return healthy_mask, stressed_mask
-    ```
+    def process_image(self, image_path):
+        """
+        Process single image and return metrics
+        """
+        # Read image
+        image = cv2.imread(str(image_path))
+        if image is None:
+            raise ValueError(f"Could not read image: {image_path}")
+        
+        # Preprocess
+        resized, hsv = self.preprocess(image)
+        
+        # Detect vegetation
+        veg_mask, veg_pixels, total_pixels, veg_coverage = self.detect_vegetation(hsv)
+        
+        # Calculate greenness
+        greenness = self.calculate_greenness_intensity(hsv, veg_mask)
+        
+        return {
+            'vegetation_coverage': veg_coverage,
+            'greenness_intensity': greenness,
+            'vegetation_pixels': veg_pixels,
+            'total_pixels': total_pixels
+        }
+
+
+
+
+# Legacy function kept for compatibility
+def detect_vegetation(image) -> Tuple[np.ndarray, Dict[str, float]]:
     """
-    print("[VEGETATION DETECTION] Classifying vegetation health")
-    print("[VEGETATION DETECTION] ⚠️ Using placeholder - implement classification")
+    Legacy function - uses VegetationDetector class internally
+    """
+    detector = VegetationDetector()
+    
+    # Create dummy image path for in-memory processing
+    temp_mask = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
+    
+    # Convert to HSV and detect
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    veg_mask, _, _, veg_coverage = detector.detect_vegetation(hsv)
+    greenness = detector.calculate_greenness_intensity(hsv, veg_mask)
+    
+    metrics = {
+        'vegetation_coverage': veg_coverage,
+        'greenness_intensity': greenness
+    }
+    
+    return veg_mask, metrics
 
-    # If numpy is unavailable, return simple placeholders
-    if np is None:
-        print('[VEGETATION DETECTION] NumPy not available — returning minimal health masks')
-        return mask, [[0 for _ in range(len(mask[0]))] for _ in range(len(mask))]
-
-    # Placeholder: split vegetation randomly
-    healthy_mask = mask.copy()
-    stressed_mask = np.zeros_like(mask)
-
-    # Simulate 70% healthy, 30% stressed
-    stressed_indices = np.random.rand(*mask.shape) < 0.3
-    healthy_mask[stressed_indices] = 0
-    stressed_mask[stressed_indices & (mask == 1)] = 1
-
-    return healthy_mask, stressed_mask
-
-
-def calculate_vegetation_metrics(mask: Any, healthy_mask: Any, 
-                                  stressed_mask: Any) -> Dict[str, float]:
     """
     Calculate vegetation coverage metrics
     
@@ -188,19 +174,8 @@ def calculate_vegetation_metrics(mask: Any, healthy_mask: Any,
     return metrics
 
 
+# REMOVED - Not using ML model loading
 def load_vegetation_model(model_path: str = None):
-    """
-    Load pre-trained vegetation detection model
-    
-    TODO: Implement model loading
-    
-    Args:
-        model_path: Path to saved model file
-        
-    Returns:
-        Loaded model
-    """
-    print("[VEGETATION DETECTION] Loading vegetation detection model")
-    print("[VEGETATION DETECTION] ⚠️ Model loading not implemented yet")
-    
-    return None
+    """REMOVED - Not using ML models"""
+    pass
+

@@ -1,101 +1,45 @@
 """
 Image Preprocessing Module
-PLACEHOLDER - To be implemented with actual image processing logic
+REMOVED - Preprocessing is now handled directly in VegetationDetector class
 
-This module will handle:
-1. Image normalization
-2. Resizing to standard dimensions
-3. Format conversion
-4. Noise reduction
-5. Color space conversion (RGB to appropriate format for analysis)
-6. Contrast enhancement
+This module is kept for backward compatibility but is no longer used.
+The VegetationDetector class handles all necessary preprocessing:
+- Resizing to standard dimensions
+- RGB to HSV conversion
+- Color-based segmentation
 
-Future Implementation:
-- Use OpenCV or PIL for image manipulation
-- Apply standard preprocessing pipeline
-- Prepare image for vegetation detection
+No ML, NDVI, or complex enhancement is needed.
 """
 
-try:
-    import numpy as np
-except Exception:
-    np = None
-from typing import Tuple, Any
+import cv2
+import numpy as np
+from typing import Any
 
 
 def preprocess_image(image_path: str) -> Any:
     """
-    Preprocess uploaded image for analysis
+    DEPRECATED - Use VegetationDetector.process_image() instead
     
-    TODO: Implement actual preprocessing logic
-    
-    Steps:
-    1. Load image from path
-    2. Resize to standard dimensions (e.g., 512x512)
-    3. Normalize pixel values (0-1 or 0-255)
-    4. Apply noise reduction filters
-    5. Convert to appropriate color space (e.g., RGB, LAB)
-    6. Enhance contrast if needed
-    
-    Args:
-        image_path: Path to uploaded image file
-        
-    Returns:
-        Preprocessed image as numpy array
-        
-    Example implementation (commented out):
-    ```python
-    import cv2
-    
-    # Load image
-    img = cv2.imread(image_path)
-    
-    # Resize
-    img = cv2.resize(img, (512, 512))
-    
-    # Denoise
-    img = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
-    
-    # Normalize
-    img = img.astype(np.float32) / 255.0
-    
-    return img
-    ```
+    Kept for backward compatibility only.
     """
-    print(f"[PREPROCESSING] Processing image: {image_path}")
-    print("[PREPROCESSING] ⚠️ Using placeholder - implement actual preprocessing")
-
-    # If numpy is unavailable, return a simple Python placeholder
-    if np is None:
-        print('[PREPROCESSING] NumPy not available — returning minimal placeholder')
-        # Return a minimal nested-list placeholder (3 channels)
-        return [[[0.0, 0.0, 0.0] for _ in range(512)] for _ in range(512)]
-
-    # Placeholder: return dummy array
-    return np.zeros((512, 512, 3), dtype=np.float32)
+    # Simple load and return - actual processing done in VegetationDetector
+    img = cv2.imread(str(image_path))
+    return img
 
 
 def enhance_vegetation_features(image: Any) -> Any:
     """
-    Enhance vegetation features in image
-    
-    TODO: Implement vegetation enhancement
-    
-    Techniques:
-    - Calculate NDVI (Normalized Difference Vegetation Index)
-    - Apply green band enhancement
-    - Histogram equalization for vegetation channels
-    
-    Args:
-        image: Preprocessed image
-        
-    Returns:
-        Enhanced image
+    REMOVED - No enhancement needed
     """
-    print("[PREPROCESSING] Enhancing vegetation features")
-    print("[PREPROCESSING] ⚠️ Using placeholder - implement enhancement")
-    
     return image
+
+
+def resize_image(image: Any, target_size: Tuple[int, int] = (512, 512)) -> Any:
+    """
+    DEPRECATED - Use VegetationDetector.preprocess() instead
+    """
+    return cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
+
 
 
 def validate_image(image_path: str) -> Tuple[bool, str]:

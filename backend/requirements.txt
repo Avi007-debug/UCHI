@@ -32,10 +32,13 @@ supabase==2.0.0
 # Development tools
 python-dotenv==1.0.0
 # Core numerical library required by placeholder AI modules
-numpy==1.26.2
+numpy>=1.24.0
 
 # Optional image processing and ML libraries (uncomment when needed)
 # opencv-python==4.8.1.78
 # Pillow==10.1.0
 # tensorflow==2.15.0
 # torch==2.1.1
+
+
+opencv-python==4.8.1.78

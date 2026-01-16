@@ -1,195 +1,213 @@
 """
-Automated CV Pipeline for UCHI
-Offline batch processing script that computes CHI values for all regions
-
-This script:
-1. Reads satellite imagery from dataset folder
-2. Preprocesses images (normalization, enhancement)
-3. Detects vegetation using rule-based CV (NDVI thresholds)
-4. Calculates CHI for each region
-5. Updates Supabase database with results
-
-Usage:
-    python run_cv_pipeline.py
-
-Requirements:
-    - Dataset folder with organized imagery
-    - Configured Supabase credentials in .env
-    - Python packages: numpy, opencv-python, rasterio
+Computer Vision Pipeline - Batch Processor
+Process all images and calculate final CHI scores for all locations
 """
 
+import cv2
+import numpy as np
 import os
-import sys
-from pathlib import Path
-from datetime import datetime
 import json
-
-# Import existing modules
-from preprocessing import preprocess_image
-from vegetation_detection import detect_vegetation
-from chi_calculation import calculate_chi
+from pathlib import Path
+from datetime import datetime, date
+from vegetation_detection import VegetationDetector
+from chi_calculation import CHICalculator
 from database import Database
-from config import Config
 
-class CVPipeline:
-    """Automated Computer Vision Pipeline"""
+
+class BatchProcessor:
+    """
+    D. Batch execution script
+    Process all images and calculate final CHI
+    """
     
-    def __init__(self):
+    def __init__(self, datasets_dir="datasets"):
+        self.datasets_dir = Path(datasets_dir)
+        self.detector = VegetationDetector()
+        self.calculator = CHICalculator()
         self.db = Database()
-        self.dataset_path = Path(Config.DATASET_PATH) if hasattr(Config, 'DATASET_PATH') else Path('data/dataset')
-        self.results = []
+        self.results = {}
     
-    def process_region(self, image_path: str, region_name: str) -> dict:
+    def process_location(self, location_name, area_type):
         """
-        Process a single image and compute CHI
+        Process all images for a specific location
+        Returns averaged CHI and metrics
         
         Args:
-            image_path: Path to satellite image
-            region_name: Name of region (Bengaluru, Campus, etc.)
-            
-        Returns:
-            Dictionary with CHI results
+            location_name: Directory name (e.g., 'bangalore', 'rvce')
+            area_type: Display name for database (e.g., 'Bengaluru', 'RVCE')
         """
-        print(f"  Processing: {region_name}")
+        location_dir = self.datasets_dir / location_name
         
-        try:
-            # Step 1: Preprocess
-            processed_img = preprocess_image(image_path)
-            
-            # Step 2: Detect vegetation
-            vegetation_mask = detect_vegetation(processed_img)
-            
-            # Step 3: Calculate CHI
-            chi_data = calculate_chi(processed_img, vegetation_mask)
-            
-            result = {
-                'region': region_name,
-                'chi': chi_data['chi'],
-                'coverage': chi_data['coverage'],
-                'healthy_pct': chi_data['healthy_percentage'],
-                'stressed_pct': chi_data['stressed_percentage'],
-                'timestamp': datetime.now().isoformat()
-            }
-            
-            print(f"    ✓ CHI: {chi_data['chi']:.1f}")
-            return result
-            
-        except Exception as e:
-            print(f"    ✗ Error: {str(e)}")
+        if not location_dir.exists():
+            print(f"Warning: Directory not found - {location_dir}")
             return None
-    
-    def run_pipeline(self):
-        """
-        Run the complete pipeline for all regions
-        """
-        print("=" * 60)
-        print("UCHI Automated CV Pipeline")
-        print("=" * 60)
-        print(f"Dataset Path: {self.dataset_path}")
-        print(f"Database: Supabase PostgreSQL")
-        print("-" * 60)
         
-        # Define regions and their image paths
-        regions = [
-            {
-                'name': 'Bengaluru',
-                'path': self.dataset_path / 'bangalore' / 'latest.tif',
-                'area_type': 'Bengaluru'
-            },
-            {
-                'name': 'RVCE Campus',
-                'path': self.dataset_path / 'rvce' / 'campus.tif',
-                'area_type': 'RVCE',
-                'sub_region': 'Campus'
-            },
-            {
-                'name': 'RVCE Sports Ground',
-                'path': self.dataset_path / 'rvce' / 'sports.tif',
-                'area_type': 'RVCE',
-                'sub_region': 'Sports Ground'
-            },
-            {
-                'name': 'RVCE Parking',
-                'path': self.dataset_path / 'rvce' / 'parking.tif',
-                'area_type': 'RVCE',
-                'sub_region': 'Parking'
-            },
-            {
-                'name': 'RVCE Hostel',
-                'path': self.dataset_path / 'rvce' / 'hostel.tif',
-                'area_type': 'RVCE',
-                'sub_region': 'Hostel'
-            },
+        # Find all image files
+        image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff'}
+        image_files = [
+            f for f in location_dir.iterdir() 
+            if f.suffix.lower() in image_extensions
         ]
         
-        print(f"\nProcessing {len(regions)} regions...")
-        print()
+        if not image_files:
+            print(f"Warning: No images found in {location_dir}")
+            return None
         
-        for region in regions:
-            # Check if image exists
-            if not region['path'].exists():
-                print(f"⚠ Skipping {region['name']}: Image not found")
-                continue
-            
-            # Process region
-            result = self.process_region(
-                str(region['path']),
-                region['name']
+        print(f"\nProcessing {area_type}: {len(image_files)} images")
+        
+        # Process each image
+        all_metrics = []
+        successful = 0
+        filtered_count = 0
+        
+        for img_path in image_files:
+            try:
+                metrics = self.detector.process_image(img_path)
+                
+                # Filter out images with less than 5% vegetation coverage
+                if metrics['vegetation_coverage'] < 5.0:
+                    print(f"  ⊘ {img_path.name}: Coverage={metrics['vegetation_coverage']:.1f}% (filtered - too low)")
+                    filtered_count += 1
+                    continue
+                
+                all_metrics.append(metrics)
+                successful += 1
+                print(f"  ✓ {img_path.name}: Coverage={metrics['vegetation_coverage']:.1f}%")
+            except Exception as e:
+                print(f"  ✗ {img_path.name}: Error - {e}")
+        
+        if not all_metrics:
+            print(f"Error: No images processed successfully for {area_type}")
+            return None
+        
+        # Calculate averages
+        avg_coverage = np.mean([m['vegetation_coverage'] for m in all_metrics])
+        avg_greenness = np.mean([m['greenness_intensity'] for m in all_metrics])
+        
+        # Calculate final CHI
+        final_chi = self.calculator.calculate_chi(avg_coverage, avg_greenness)
+        status = self.calculator.get_chi_status(final_chi)
+        interpretation = self.calculator.get_interpretation(status)
+        
+        result = {
+            'location': area_type,
+            'chi_score': round(final_chi, 2),
+            'status': status,
+            'interpretation': interpretation,
+            'metrics': {
+                'vegetation_coverage': round(avg_coverage, 2),
+                'greenness_intensity': round(avg_greenness, 2)
+            },
+            'images_processed': successful,
+            'images_filtered': filtered_count,
+            'total_images': len(image_files),
+            'timestamp': datetime.now().isoformat(),
+            'date': date.today().isoformat()
+        }
+        
+        print(f"  Filtered {filtered_count} images with <5% coverage")
+        
+        return result
+    
+    def save_to_database(self, result):
+        """
+        Save CHI result to Supabase database
+        
+        Args:
+            result: Dictionary with CHI calculation results
+        """
+        try:
+            # Insert into database with individual arguments
+            record_id = self.db.insert_chi_result(
+                image_id=None,  # No image_id for batch processing
+                area_type=result['location'],
+                sub_region=None,  # Can be expanded later
+                chi_value=result['chi_score'],
+                status=result['status'],
+                interpretation=result['interpretation'],
+                date=result['date'],
+                vegetation_coverage=result['metrics']['vegetation_coverage'],
+                healthy_vegetation=None,  # Not using this metric
+                stressed_vegetation=None  # Not using this metric
             )
             
-            if result:
-                self.results.append(result)
+            if record_id and record_id > 0:
+                print(f"  ✓ Saved to database: {result['location']} (ID: {record_id})")
+            else:
+                print(f"  ✗ Failed to save to database: {result['location']}")
                 
-                # Update database
-                try:
-                    # Store in database
-                    # Note: You'll need to implement insert_chi_value method
-                    # self.db.insert_chi_value(
-                    #     area_type=region['area_type'],
-                    #     sub_region=region.get('sub_region'),
-                    #     chi=result['chi'],
-                    #     date=datetime.now().strftime('%Y-%m-%d')
-                    # )
-                    print(f"    ✓ Database updated")
-                except Exception as e:
-                    print(f"    ✗ Database error: {str(e)}")
-        
-        print()
-        print("-" * 60)
-        print(f"Pipeline Complete: {len(self.results)}/{len(regions)} regions processed")
+        except Exception as e:
+            print(f"  ✗ Database error: {e}")
+    
+    def process_all_locations(self):
+        """
+        Process all specified locations
+        Uses folder names and maps to display names
+        """
+        print("=" * 60)
+        print("URBAN CHI - Computer Vision Pipeline")
         print("=" * 60)
         
-        # Save results to JSON
-        self.save_results()
+        # Map folder names to display names (matching database schema)
+        locations = [
+            ('bangalore', 'Bengaluru'),
+            ('rvce', 'RVCE')
+        ]
+        
+        for folder_name, display_name in locations:
+            result = self.process_location(folder_name, display_name)
+            if result:
+                self.results[folder_name] = result
+                # Save to database
+                self.save_to_database(result)
+        
+        return self.results
     
-    def save_results(self):
+    def save_results(self, output_file='chi_results.json'):
         """Save results to JSON file"""
-        output_file = Path('pipeline_results.json')
+        output_path = Path(output_file)
         
-        with open(output_file, 'w') as f:
-            json.dump({
-                'timestamp': datetime.now().isoformat(),
-                'total_processed': len(self.results),
-                'results': self.results
-            }, f, indent=2)
+        with open(output_path, 'w') as f:
+            json.dump(self.results, f, indent=2)
         
-        print(f"\nResults saved to: {output_file}")
+        print(f"\n✓ Results saved to: {output_path}")
+    
+    def print_summary(self):
+        """Print summary of results"""
+        print("\n" + "=" * 60)
+        print("RESULTS SUMMARY")
+        print("=" * 60)
+        
+        for location, data in self.results.items():
+            print(f"\n{data['location'].upper()}")
+            print(f"  CHI Score: {data['chi_score']}/100 ({data['status']})")
+            print(f"  Vegetation Coverage: {data['metrics']['vegetation_coverage']}%")
+            print(f"  Greenness Intensity: {data['metrics']['greenness_intensity']}/100")
+            print(f"  Images: {data['images_processed']}/{data['total_images']} processed")
+            print(f"  Interpretation: {data['interpretation']}")
 
 
 def main():
-    """Main entry point"""
-    pipeline = CVPipeline()
+    """
+    Main execution function
+    Run this to process all datasets and generate CHI scores
+    """
+    # Initialize batch processor
+    processor = BatchProcessor(datasets_dir="datasets")
     
-    try:
-        pipeline.run_pipeline()
-        sys.exit(0)
-    except KeyboardInterrupt:
-        print("\n\nPipeline interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n\nPipeline failed: {str(e)}")
-        sys.exit(1)
+    # Process all locations
+    processor.process_all_locations()
+    
+    # Print summary
+    processor.print_summary()
+    
+    # Save results to JSON
+    processor.save_results('chi_results.json')
+    
+    print("\n" + "=" * 60)
+    print("Pipeline execution complete!")
+    print("=" * 60)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
