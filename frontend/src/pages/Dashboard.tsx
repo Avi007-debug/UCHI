@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, TreeDeciduous, Loader2, Info } from 'lucide-react';
 import MapView from '@/components/map/MapView';
+import InteractiveMap from '@/components/map/InteractiveMap';
 import CHIDisplay from '@/components/chi/CHIDisplay';
+import { DataExportButton } from '@/components/DataExportButton';
 import * as api from '@/services/api';
 import type { AreaType, CHIStatus } from '@/types/uchi';
 import { CHI_LEGEND } from '@/lib/chiUtils';
@@ -112,9 +114,12 @@ const Dashboard = () => {
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Vegetation Health Visualization
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
             Real-time monitoring of urban canopy health across Bengaluru city and RVCE campus
           </p>
+          <div className="flex justify-center">
+            <DataExportButton />
+          </div>
         </div>
 
         {/* Region Toggle */}
@@ -135,9 +140,9 @@ const Dashboard = () => {
           {/* Bengaluru View */}
           <TabsContent value="Bengaluru" className="animate-fade-in space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Map */}
+              {/* Interactive Map */}
               <div className="md:col-span-2">
-                <MapView
+                <InteractiveMap
                   areaType="Bengaluru"
                   bengaluruCHI={bengaluruData?.chi || 0}
                   rvceCHI={rvceData?.chi || 0}
@@ -197,9 +202,9 @@ const Dashboard = () => {
           {/* RVCE View */}
           <TabsContent value="RVCE" className="animate-fade-in space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Map */}
+              {/* Interactive Map */}
               <div className="md:col-span-2">
-                <MapView
+                <InteractiveMap
                   areaType="RVCE"
                   bengaluruCHI={bengaluruData?.chi || 0}
                   rvceCHI={rvceData?.chi || 0}
