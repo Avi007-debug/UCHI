@@ -254,7 +254,8 @@ UCHI/
 │   ├── diagnose_images.py          # Diagnostic tool
 │   ├── datasets/
 │   │   ├── bangalore/              # Bengaluru images
-│   │   └── rvce/                   # RVCE images
+│   │   ├── rvce/                   # RVCE images
+│   │   └── cubbon/                 # Cbbon Park images
 │   └── requirements.txt
 │
 ├── frontend/
