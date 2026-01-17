@@ -22,7 +22,7 @@ const Footer = () => {
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <span>Study Area:</span>
-              <span className="text-foreground font-medium">Bengaluru & RVCE</span>
+              <span className="text-foreground font-medium"> Bengaluru & RVCE</span>
             </span>
             <span className="hidden sm:block">•</span>
             <span className="hidden sm:flex items-center gap-1">
@@ -33,14 +33,14 @@ const Footer = () => {
 
           <div className="flex items-center gap-3">
             <a
-              href="#"
+              href="https://github.com/Avi007-debug/UCHI"
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Github className="h-4 w-4" />
               <span className="hidden sm:inline">Repository</span>
             </a>
             <a
-              href="#"
+              href="https://github.com/Avi007-debug/UCHI/blob/main/RESEARCH_DOCUMENTATION.md"
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ExternalLink className="h-4 w-4" />

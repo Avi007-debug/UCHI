@@ -76,6 +76,15 @@ const Methodology = () => {
                       sports grounds, parking areas, and hostel blocks.
                     </p>
                   </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1">Cubbon Park (Meso Level)</h4>
+                    <p className="text-sm text-muted-foreground">
+                        Focused green-space analysis covering one of Bengaluru’s largest urban parks,
+                        emphasizing dense tree canopy, vegetation health, and its role in urban cooling
+                        and ecological balance.
+                    </p>
+                  </div>
+
                 </CardContent>
               </Card>
 
@@ -121,29 +130,29 @@ const Methodology = () => {
                       step: '01',
                       title: 'Data Collection',
                       icon: Database,
-                      description: 'High-resolution satellite imagery is acquired from remote sensing platforms. Images are selected based on cloud cover, resolution, and temporal consistency.',
-                      details: ['Satellite: Landsat 8/9, Sentinel-2', 'Resolution: 10-30m', 'Spectral bands: RGB + NIR']
+                      description: 'Satellite and aerial RGB images are collected for defined urban regions and campuses.',
+                      details: ['Sources: Sentinel-2 (Bengaluru)','Image type: Natural-color RGB','Selection: Clear visibility and minimal cloud cover']
                     },
                     {
                       step: '02',
                       title: 'Image Preprocessing',
                       icon: Microscope,
-                      description: 'Raw imagery undergoes radiometric correction, atmospheric correction, and geometric normalization to ensure consistent analysis.',
-                      details: ['Atmospheric correction applied', 'Cloud masking performed', 'Image enhancement for clarity']
+                      description:  'Images are resized and converted to HSV color space to enable robust vegetation detection.',
+                      details: ['Resize to uniform resolution (512×512)','RGB to HSV color-space conversion','Basic smoothing to reduce noise (optional)']
                     },
                     {
                       step: '03',
                       title: 'Vegetation Detection',
                       icon: Map,
-                      description: 'Rule-based computer vision algorithms segment vegetation from non-vegetation using spectral indices (NDVI, EVI) and classification techniques.',
-                      details: ['NDVI threshold-based segmentation', 'Morphological filtering', 'Canopy density calculation']
+                      description: 'Vegetation regions are segmented using rule-based HSV color thresholds to detect green canopy areas.',
+                      details: ['HSV-based green pixel segmentation','Binary vegetation mask generation','Vegetation pixel counting']
                     },
                     {
                       step: '04',
                       title: 'CHI Calculation',
                       icon: TrendingUp,
-                      description: 'Health metrics are aggregated into a single 0-100 score based on canopy coverage, vegetation vigor, and spatial distribution.',
-                      details: ['Coverage weight: 40%', 'Vigor weight: 35%', 'Distribution weight: 25%']
+                      description: 'Vegetation metrics are aggregated into a single Canopy Health Index (0–100) score.',
+                      details: [ 'Vegetation coverage weight: 70%','Greenness intensity weight: 30%','Deterministic, reproducible computation']
                     }
                   ].map((item) => {
                     const Icon = item.icon;
@@ -181,10 +190,11 @@ const Methodology = () => {
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">CV Approach: Rule-Based</h4>
                     <p className="text-sm text-muted-foreground">
-                      This system uses a <strong>rule-based computer vision approach</strong> rather than deep learning. 
-                      Vegetation is detected using spectral indices (NDVI = (NIR - Red) / (NIR + Red)) with empirically 
-                      determined thresholds. This approach ensures interpretability, requires no training data, 
-                      and provides consistent results across different imagery conditions.
+                      This system uses a <strong>rule-based computer vision approach</strong> instead of deep learning.
+                      The Vegetation is detected directly from <strong>RGB satellite imagery</strong> using 
+                      <strong>HSV color-space segmentation</strong> to identify green vegetation pixels.
+                      The method is fully deterministic, requires no training data, and ensures high interpretability
+                      with consistent results across different urban environments.
                     </p>
                   </div>
                 </div>
@@ -404,20 +414,10 @@ const Methodology = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="border-l-2 border-primary pl-4">
-                    <h3 className="font-semibold text-foreground mb-1">Landsat 8/9 (USGS)</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      30m resolution multispectral imagery with 16-day revisit time. 
-                      Provides consistent long-term data for temporal analysis.
-                    </p>
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div>• Spatial Resolution: 30m (multispectral)</div>
-                      <div>• Temporal Resolution: 16 days</div>
-                      <div>• Spectral Bands: 11 (including NIR)</div>
-                    </div>
-                  </div>
-
-                  <div className="border-l-2 border-primary pl-4">
-                    <h3 className="font-semibold text-foreground mb-1">Sentinel-2 (ESA)</h3>
+                    <h3 className="font-semibold text-foreground mb-1 flex items-center gap-2">
+                       Sentinel-2 (ESA)
+                      <span className="text-xs text-primary font-medium">(Primary)</span>
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-2">
                       10m resolution with high spectral fidelity. Excellent for detailed 
                       vegetation analysis at campus level.
@@ -426,6 +426,21 @@ const Methodology = () => {
                       <div>• Spatial Resolution: 10m (RGB + NIR)</div>
                       <div>• Temporal Resolution: 5 days</div>
                       <div>• Spectral Bands: 13</div>
+                    </div>
+                  </div>
+                    <div className="border-l-2 border-primary pl-4">
+                    <h3 className="font-semibold text-foreground mb-1 flex items-center gap-2">
+                      Landsat 8/9 (USGS)
+                      <span className="text-xs text-muted-foreground font-medium">(Supporting)</span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      30m resolution multispectral imagery with 16-day revisit time. 
+                      Provides consistent long-term data for temporal analysis.
+                    </p>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <div>• Spatial Resolution: 30m (multispectral)</div>
+                      <div>• Temporal Resolution: 16 days</div>
+                      <div>• Spectral Bands: 11 (including NIR)</div>
                     </div>
                   </div>
                 </div>
@@ -563,7 +578,7 @@ const Methodology = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-amber-600">4. Additional Constraints</CardTitle>
+                  <CardTitle className="text-lg text-amber-600">5. Additional Constraints</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2 text-sm text-muted-foreground">

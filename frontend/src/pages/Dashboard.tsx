@@ -92,7 +92,7 @@ const Dashboard = () => {
         <Card className="max-w-2xl mx-auto border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Connection Error</CardTitle>
-            <CardDescription>Unable to fetch data from backend</CardDescription>
+            <CardDescription>Unable to fetch data from server</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">{error}</p>
@@ -201,11 +201,11 @@ const Dashboard = () => {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">RVCE Highlighted</CardTitle>
+                    <CardTitle className="text-sm">RVCE and Cubbon Park Highlighted</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
-                      RVCE campus is highlighted on the map with its own CHI value ({rvceData?.chi.toFixed(1)}).
+                      RVCE campus (CHI: {rvceData?.chi?.toFixed(1) ?? "N/A"}) and Cubbon Park(CHI: {cubbonData?.chi?.toFixed(1) ?? "N/A"}) are highlighted on the map.
                       Click the RVCE tab to zoom into campus details.
                     </p>
                   </CardContent>
