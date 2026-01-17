@@ -14,8 +14,8 @@
  */
 
 // Configuration
-export const USE_MOCK_API = false; // Set to true to use mock data
-export const BACKEND_URL = 'http://localhost:5000'; // Backend URL
+export const USE_MOCK_API = true; // Set to true to use mock data (static deployment)
+export const BACKEND_URL = 'http://localhost:5000'; // Backend URL (not used when USE_MOCK_API is true)
 
 // API endpoints
 export const API_ENDPOINTS = {

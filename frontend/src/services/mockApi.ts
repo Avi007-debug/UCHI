@@ -260,17 +260,40 @@ export const getTemporalComparison = async (region: string): Promise<TemporalCom
 };
 
 /**
+ * Load CHI results from static JSON file
+ */
+let cachedResults: any = null;
+const loadCHIResults = async () => {
+  if (cachedResults) return cachedResults;
+  
+  try {
+    const response = await fetch('/data/chi_results.json');
+    cachedResults = await response.json();
+    return cachedResults;
+  } catch (error) {
+    console.error('Failed to load CHI results:', error);
+    // Fallback to default values
+    return {
+      bangalore: { chi_score: 25.0, status: 'Poor', interpretation: 'Limited vegetation cover requiring intervention' },
+      rvce: { chi_score: 22.32, status: 'Critical', interpretation: 'Severe vegetation deficit threatening urban health' },
+      cubbon: { chi_score: 37.86, status: 'Good', interpretation: 'Healthy vegetation cover supporting urban ecosystem services' }
+    };
+  }
+};
+
+/**
  * API: Get Bengaluru CHI (Precomputed)
  * GET /chi/bangalore
  */
 export const getBengaluruCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
   await delay(300);
-  const chi = 62.5;
-  const category = getCHIStatus(chi);
+  const results = await loadCHIResults();
+  const data = results.bangalore;
+  
   return {
-    chi,
-    category,
-    interpretation: getCHIInterpretation(category),
+    chi: data.chi_score,
+    category: data.status as CHIStatus,
+    interpretation: data.interpretation,
     areaType: 'Bengaluru',
   };
 };
@@ -281,12 +304,13 @@ export const getBengaluruCHI = async (): Promise<{ chi: number; category: CHISta
  */
 export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
   await delay(300);
-  const chi = 71.3;
-  const category = getCHIStatus(chi);
+  const results = await loadCHIResults();
+  const data = results.rvce;
+  
   return {
-    chi,
-    category,
-    interpretation: getCHIInterpretation(category),
+    chi: data.chi_score,
+    category: data.status as CHIStatus,
+    interpretation: data.interpretation,
     areaType: 'RVCE',
   };
 };
@@ -297,12 +321,13 @@ export const getRVCECHI = async (): Promise<{ chi: number; category: CHIStatus; 
  */
 export const getCubbonCHI = async (): Promise<{ chi: number; category: CHIStatus; interpretation: string; areaType: string }> => {
   await delay(300);
-  const chi = 37.86;
-  const category = getCHIStatus(chi);
+  const results = await loadCHIResults();
+  const data = results.cubbon;
+  
   return {
-    chi,
-    category,
-    interpretation: getCHIInterpretation(category),
+    chi: data.chi_score,
+    category: data.status as CHIStatus,
+    interpretation: data.interpretation,
     areaType: 'Cubbon Park',
   };
 };
