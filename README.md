@@ -9,6 +9,10 @@
 
 Track, analyze, and visualize canopy health across cities and campuses to support urban sustainability and ecological planning.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit-blue)](https://dynamicurbancanopyhealthindex.vercel.app/)
+
+Live demo: https://your-vercel-url.vercel.app  <!-- Replace with your actual Vercel URL -->
+
 ---
 
 ## � Problem Statement
