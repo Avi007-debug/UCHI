@@ -9,8 +9,10 @@
 
 Track, analyze, and visualize canopy health across cities and campuses to support urban sustainability and ecological planning.
 
----
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit-blue)](https://dynamicurbancanopyhealthindex.vercel.app/)
 
+Live demo: https://dynamicurbancanopyhealthindex.vercel.app/ 
+---
 ## � Problem Statement
 
 Existing urban vegetation indices (e.g., NDVI, EVI) rely on multispectral data (near-infrared bands) and global thresholds, limiting their interpretability and applicability in heterogeneous urban environments. There is a lack of **lightweight, reproducible frameworks** that provide **context-aware vegetation health assessment** using widely available RGB imagery.
