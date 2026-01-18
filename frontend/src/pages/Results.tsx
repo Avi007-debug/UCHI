@@ -147,7 +147,7 @@ const Results = () => {
                   <TreePine className="h-5 w-5 text-primary" />
                   Cubbon Park
                 </CardTitle>
-                <CardDescription>300-acre park (37.86 CHI)</CardDescription>
+                <CardDescription>180 acre part of park (37.86 CHI)</CardDescription>
               </CardHeader>
               <CardContent>
                 <CHIDisplay 
