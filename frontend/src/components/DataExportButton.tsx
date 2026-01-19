@@ -18,12 +18,67 @@ export function DataExportButton() {
     setIsExporting(true);
     
     try {
-      // Check if mock API is enabled
+      // If using mock API, export the static data from public/data/chi_results.json
       if (USE_MOCK_API) {
+        const resp = await fetch('/data/chi_results.json');
+        if (!resp.ok) throw new Error('Failed to load mock data for export');
+        const data = await resp.json();
+
+        if (format === 'csv') {
+          const regions = Object.keys(data);
+          const csvRows = [
+            'Region,Location,Area Type,CHI Score,Status,Interpretation,Vegetation Coverage (%),Greenness Intensity,Images Processed,Images Filtered,Total Images,Date'
+          ];
+
+          regions.forEach(region => {
+            const r = data[region] || {};
+            const chi = typeof r.chi_score === 'number' ? r.chi_score.toFixed(2) : r.chi_score ?? '';
+            const veg = r.metrics && typeof r.metrics.vegetation_coverage === 'number' ? r.metrics.vegetation_coverage.toFixed(2) : '';
+            const green = r.metrics && typeof r.metrics.greenness_intensity === 'number' ? r.metrics.greenness_intensity.toFixed(2) : '';
+            const interp = r.interpretation ? String(r.interpretation).replace(/"/g, '""') : '';
+
+            csvRows.push([
+              region,
+              r.location ?? '',
+              r.area_type ?? '',
+              chi,
+              r.status ?? '',
+              `"${interp}"`,
+              veg,
+              green,
+              r.images_processed ?? '',
+              r.images_filtered ?? '',
+              r.total_images ?? '',
+              r.date ?? ''
+            ].join(','));
+          });
+
+          const csvContent = csvRows.join('\n');
+          const blob = new Blob([csvContent], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'uchi_results.csv';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          const jsonContent = JSON.stringify(data, null, 2);
+          const blob = new Blob([jsonContent], { type: 'application/json' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'uchi_complete_export.json';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }
+
         toast({
-          title: 'Export unavailable',
-          description: 'Export functionality requires a live backend connection. This demo uses mock data.',
-          variant: 'destructive',
+          title: 'Export successful',
+          description: `Data exported as ${format === 'csv' ? 'uchi_results.csv' : 'uchi_complete_export.json'}`,
         });
         setIsExporting(false);
         return;
