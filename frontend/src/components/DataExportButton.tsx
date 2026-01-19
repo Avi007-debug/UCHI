@@ -8,8 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { BACKEND_URL, USE_MOCK_API } from '@/services/apiConfig';
 
 export function DataExportButton() {
   const [isExporting, setIsExporting] = useState(false);
@@ -19,7 +18,18 @@ export function DataExportButton() {
     setIsExporting(true);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/export/${format}`, {
+      // Check if mock API is enabled
+      if (USE_MOCK_API) {
+        toast({
+          title: 'Export unavailable',
+          description: 'Export functionality requires a live backend connection. This demo uses mock data.',
+          variant: 'destructive',
+        });
+        setIsExporting(false);
+        return;
+      }
+
+      const response = await fetch(`${BACKEND_URL}/export/${format}`, {
         method: 'GET',
       });
 
